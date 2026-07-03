@@ -1,0 +1,26 @@
+// Global Colors
+$primary: #7998ff;
+$onPrimary: #000000;
+$secondary: #ff79db;
+$onSecondary: #000000;
+// Semantic Colors
+$success: #7dff95;
+$warning: #ffbc5e;
+$error: #ff8080;
+$info: #ff8080;
+// Surfaces
+$background: #0f1320;
+$surface: #222633;
+
+// Fonts
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter_24pt-Regular.ttf');
+}
+
+// Styles
+
+body {
+    background-color: $background;
+    color: $primary
+}
