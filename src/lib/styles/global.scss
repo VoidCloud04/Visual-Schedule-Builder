@@ -1,16 +1,4 @@
-// Global Colors
-$primary: #7998ff;
-$onPrimary: #000000;
-$secondary: #ff79db;
-$onSecondary: #000000;
-// Semantic Colors
-$success: #7dff95;
-$warning: #ffbc5e;
-$error: #ff8080;
-$info: #ff8080;
-// Surfaces
-$background: #0f1320;
-$surface: #222633;
+@use 'variables' as *;
 
 // Fonts
 @font-face {
@@ -18,9 +6,74 @@ $surface: #222633;
     src: url('../fonts/Inter_24pt-Regular.ttf');
 }
 
-// Styles
+@font-face {
+    font-family: 'Manrope';
+    src: url('../fonts/Manrope-Medium.ttf');
+}
+
+// Global Element Styles
+
+* {
+    font-family: $bodyFont;
+    text-align: center;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: $headingFont;
+}
 
 body {
     background-color: $background;
-    color: $primary
+    color: $onBackground
+}
+
+a {
+    color: $primary;
+
+    &:visited {
+        color: $secondary;
+    }
+}
+
+button {
+    margin: 0.1vh 0.2vw 0.1vh 0.2vw;
+    padding: 10px;
+    font-size: 15px;
+    border: 2px solid $border;
+    border-radius: 40px;
+    transition-duration: 0.1s;
+}
+
+// Global Style Classes
+
+.flexRow {
+    display: flex;
+    flex-direction: row;
+}
+
+.flexCol {
+    display: flex;
+    flex-direction: column;
+}
+
+.button-primary {
+    background-color: $primary;
+    color: $onPrimary;
+    border-color: $primary;
+    
+    &:hover {
+        background-color: $primaryVar;
+        border-color: $primaryVar
+    }
+}
+
+.button-secondary {
+    background-color: $secondary;
+    color: $onSecondary;
+    border-color: $secondary;
+
+    &:hover {
+        background-color: $secondaryVar;
+        border-color: $secondaryVar;
+    }
 }
