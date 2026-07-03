@@ -44,6 +44,11 @@ button {
     transition-duration: 0.1s;
 }
 
+hr {
+    border: 1px solid $border;
+    margin-bottom: 8px;
+}
+
 // Global Style Classes
 
 .flexRow {

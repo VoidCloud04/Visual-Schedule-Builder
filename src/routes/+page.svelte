@@ -1,14 +1,29 @@
 <script>
     import Header from "./Header.svelte";
     import TabRow from "$lib/components/TabRow.svelte";
+    import Configuration from "./Configuration.svelte";
+    import Documentation from "./Documentation.svelte";
+    import Schedule from "./Schedule.svelte";
 
     const mainTabs = [
+        {name: 'Schedule Builder'},
         {name: 'Configuration'},
         {name: 'Docs'}
     ]
+
+    let selectedMainTab = $state(0)
 </script>
 
 <Header />
-<TabRow tabs={mainTabs}/>
+<TabRow tabs={mainTabs} bind:selected={selectedMainTab} />
+{#if selectedMainTab === 0}
+    <Schedule />
+{:else if selectedMainTab === 1}
+    <Configuration />
+{:else if selectedMainTab === 2}
+    <Documentation />
+{:else}
+    <h1>Invalid Tab</h1>
+{/if}
 
 
