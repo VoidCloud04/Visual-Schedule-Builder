@@ -1,9 +1,9 @@
 <script>
     import Header from "./Header.svelte";
-    import TabRow from "$lib/components/TabRow.svelte";
     import Configuration from "./Configuration.svelte";
     import Documentation from "./Documentation.svelte";
     import Schedule from "./Schedule.svelte";
+    import ButtonGroup from "$lib/components/ButtonGroup.svelte";
 
     const mainTabs = [
         {name: 'Schedule Builder'},
@@ -15,7 +15,7 @@
 </script>
 
 <Header />
-<TabRow tabs={mainTabs} bind:selected={selectedMainTab} />
+<ButtonGroup buttons={mainTabs} bind:selected={selectedMainTab} />
 {#if selectedMainTab === 0}
     <Schedule />
 {:else if selectedMainTab === 1}
