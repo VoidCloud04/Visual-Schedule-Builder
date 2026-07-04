@@ -1,5 +1,7 @@
 <script>
+    let {cEvents = $bindable()} = $props()
 
+    
 </script>
 
-<h1>Hello From Config</h1>
+<h1>Course Configuration</h1>

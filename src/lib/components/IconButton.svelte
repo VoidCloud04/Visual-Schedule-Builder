@@ -18,7 +18,6 @@
         height: 32px;
         flex: 0 0 32px;
         border-radius: 50%;
-        padding: 0;
 
         display: flex;
         align-items: center;

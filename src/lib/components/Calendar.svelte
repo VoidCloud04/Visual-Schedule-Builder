@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { colors } from "$lib/styles/colors";
 
-    let {calendarEvents = $bindable(), calendarID = $bindable(), timeScale = $bindable()} = $props()
+    let {calendarEvents = $bindable(), calendarID, timeScale = $bindable()} = $props()
 
     let canvas
     let context

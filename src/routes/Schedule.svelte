@@ -4,9 +4,9 @@
     import IconButton from "$lib/components/IconButton.svelte";
     import ToggleButton from "../lib/components/ToggleButton.svelte";
     import { format12hrTime } from '$lib/index.js'
-
-    let cEvents = $state([1,2,3,4,5,6,7,8])
-    let cID = $state('main')
+    let {cEvents = $bindable()} = $props()
+    
+    const calendarID = 'main'
     let timeScale = $state([8,23])
     const colors = ['button-primary','button-secondary','button-tertiary','button-quaternary',
     'button-quinary','button-senary','button-septenary','button-octonary'
@@ -14,7 +14,7 @@
     let buttonActive = $state(new Array(8).fill(true))
 </script>
 
-<h1>Hello From Schedule Builder</h1>
+<h1>Schedule Viewer</h1>
 <div class="flexRow">
     <div id="classesHolder" class="surface-base">
         {#if cEvents.length > 0}
@@ -22,17 +22,17 @@
                 <div class="flexCol surface-1" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw;">
                     <div class="flexRowVariant headerRow">
                         <h1 class="title">CSCE {1010 + (i * 10)}.<span style="font-size: 20px">101</span></h1>
-                        <ToggleButton class="pushRight" iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
+                        <ToggleButton iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
                     </div>
-                    <p>Course Name | Room</p>
-                    <p></p>
+                    <p><strong>Course Name</strong> | <strong>Room</strong></p>
+                    <p><strong>Meeting Time:</strong> {format12hrTime(800)}-{format12hrTime(920)} | <strong>Days:</strong> M, W, F</p>
                 </div>
             {/each}
         {:else}
             <h3>No Classes Displayed</h3>
         {/if}
     </div>
-    <Calendar bind:calendarEvents={cEvents} bind:calendarID={cID} bind:timeScale />
+    <Calendar bind:calendarEvents={cEvents} calendarID={calendarID} bind:timeScale />
 </div>
 
 <style lang="scss">

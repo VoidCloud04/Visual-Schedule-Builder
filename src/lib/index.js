@@ -9,7 +9,7 @@ export const CalendarObject = {
     room: "",
     meetingTime: new Array(2),
     daysOfWeek: new Array(5),
-    extraMeetings: new Array()
+    extraMeetings: new Array(),
 }
 
 export const ExtraMeeting = {
@@ -19,6 +19,14 @@ export const ExtraMeeting = {
     meetingTime: new Array(2),
     daysOfWeek: new Array(5)
 }
+
+export const DaysOfWeek = [
+    {name: 'Monday', abbr: "M"},
+    {name: 'Tuesday', abbr: "Tu"},
+    {name: 'Wednesday', abbr: "W"},
+    {name: 'Thursday', abbr: "Th"},
+    {name: 'Friday', abbr: "F"}
+]
 
 /**
  * 
@@ -41,4 +49,27 @@ export function format12hrTime(timeVal) {
     const timePrefix = isPM ? 'PM' : 'AM'
 
     return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes} ${timePrefix}`
+}
+
+export function saveData(calendarEvents, visibility) {
+    window.localStorage.setItem('calendarEvents',atob(JSON.stringify(calendarEvents)))
+    window.localStorage.setItem('visibleItems',atob(JSON.stringify(visibility)))
+}
+
+export function loadCalendarEvents() {
+    const loadedData = window.localStorage.getItem('calendarEvents')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No Calendar Events Available in Local Storage')
+        return new Array()
+    }
+    return JSON.parse(btoa(loadedData))
+}
+
+export function loadVisibleItems() {
+    const loadedData = window.localStorage.getItem('visibleItems')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No Visibility Data Available in Local Storage')
+        return new Array(8).fill(true)
+    }
+    return JSON.parse(btoa(loadedData))
 }
