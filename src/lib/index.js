@@ -1,23 +1,24 @@
-/** 
- * 
-*/
-export const CalendarObject = {
-    coursePrefix: "",
-    courseCode: "",
-    sectionNumber: "",
-    courseName: "",
-    room: "",
-    meetingTime: new Array(2),
-    daysOfWeek: new Array(5),
-    extraMeetings: new Array(),
+export function createCalendarObject() {
+    return {
+        coursePrefix: "",
+        courseCode: "",
+        sectionNumber: "",
+        courseName: "",
+        room: "",
+        meetingTime: [0, 2400],
+        daysOfWeek: Array(5).fill(false),
+        extraMeetings: []
+    };
 }
 
-export const ExtraMeeting = {
-    meetingType: "",
-    sectionNumber: "",
-    room: "",
-    meetingTime: new Array(2),
-    daysOfWeek: new Array(5)
+export function createExtraMeeting() {
+    return {
+        meetingType: "",
+        sectionNumber: "",
+        room: "",
+        meetingTime: [0, 2400],
+        daysOfWeek: Array(5).fill(false)
+    };
 }
 
 export const DaysOfWeek = [
@@ -51,9 +52,23 @@ export function format12hrTime(timeVal) {
     return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes} ${timePrefix}`
 }
 
-export function saveData(calendarEvents, visibility) {
-    window.localStorage.setItem('calendarEvents',atob(JSON.stringify(calendarEvents)))
-    window.localStorage.setItem('visibleItems',atob(JSON.stringify(visibility)))
+export function formatDaysOfWeek(dowArr) {
+    let dayArr = new Array()
+    for(let i = 0; i < dowArr.length; i++) {
+        if(dowArr[i]) {
+            dayArr.push(DaysOfWeek[i].abbr)
+        }
+    }
+    return dayArr.join(', ')
+}
+
+export function saveData(calendarEvents, visibilityArray) {
+    window.localStorage.setItem('calendarEvents',btoa(JSON.stringify(calendarEvents)))
+    window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
+}
+
+export function saveVisibility(visibilityArray) {
+    window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
 }
 
 export function loadCalendarEvents() {
@@ -62,7 +77,7 @@ export function loadCalendarEvents() {
         console.warn('No Calendar Events Available in Local Storage')
         return new Array()
     }
-    return JSON.parse(btoa(loadedData))
+    return JSON.parse(atob(loadedData))
 }
 
 export function loadVisibleItems() {
@@ -71,5 +86,5 @@ export function loadVisibleItems() {
         console.warn('No Visibility Data Available in Local Storage')
         return new Array(8).fill(true)
     }
-    return JSON.parse(btoa(loadedData))
+    return JSON.parse(atob(loadedData))
 }

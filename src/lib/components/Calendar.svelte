@@ -1,8 +1,8 @@
 <script>
     import { onMount } from "svelte";
-    import { colors } from "$lib/styles/colors";
+    import { colors, colorsArray } from "$lib/styles/colors";
 
-    let {calendarEvents = $bindable(), calendarID, timeScale = $bindable()} = $props()
+    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility} = $props()
 
     let canvas
     let context
@@ -41,8 +41,8 @@
         const timeIntervalWidth = (timeScale[1] - timeScale[0])
         const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
         const hourSpacing = horiDividerSpacing * 2
-        console.log(`Time Intervals: ${timeScale[0]}-${timeScale[1]}=${timeIntervalWidth}`)
-        console.log(`Divider Spacing (.5hr)/(1hr): ${horiDividerSpacing}/${hourSpacing}`)
+        // console.log(`Time Intervals: ${timeScale[0]}-${timeScale[1]}=${timeIntervalWidth}`)
+        // console.log(`Divider Spacing (.5hr)/(1hr): ${horiDividerSpacing}/${hourSpacing}`)
         for(let i = 0; i < timeIntervalWidth * 2; i++) {
             // console.log(`${i} -> Horizontal Divider`)
             if(i % 2 != 0) { // Half Hour Mark
@@ -63,7 +63,6 @@
         for(let i = 0; i < timeIntervalWidth; i++) {
             const y = headerPoint + (hourSpacing * i) + fontSize * 0.5
             const time = (timeScale[0]) + i
-            const timePrefix = time >= 12 ? "PM" : "AM"
             const timeFormatted = time > 12 ? time - 12 : time
             const colorFill = i % 2 == 0 ? colors.onSurface : colors.primary
             context.fillStyle = colorFill
@@ -78,11 +77,47 @@
     }
 
     function renderEvents() {
+        if(calendarEvents.length === 0) return null
+        const headerPoint = canvasDimensions.height * 0.0725
+        const legendPoint = canvasDimensions.width * 0.0725
+        const timeIntervalWidth = (timeScale[1] - timeScale[0])
+        const vertDividerSpacing = (canvasDimensions.width - legendPoint) / days.length
+        const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
+        const hourSpacing = horiDividerSpacing * 2
 
+
+        for(let i = 0; i < calendarEvents.length; i++) {
+            if(!eventVisibility[i]) continue
+
+            context.fillStyle = `${colorsArray[i]}bf`
+            const startDiff = ((calendarEvents[i].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
+            const height = ((calendarEvents[i].meetingTime[1] - calendarEvents[i].meetingTime[0]) / 100) * hourSpacing
+            for(let j = 0; j < calendarEvents[i].daysOfWeek.length; j++) {
+                if(!calendarEvents[i].daysOfWeek[j]) continue
+                context.fillRect(legendPoint + (vertDividerSpacing * j) + 1,headerPoint + startDiff,vertDividerSpacing,height)
+            }
+
+            if(calendarEvents[i].extraMeetings.length === 0) continue
+            for(let j = 0; j < calendarEvents[i].extraMeetings.length; j++) {
+
+                const startDiffExtra = ((calendarEvents[i].extraMeetings[j].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
+                const heightExtra = ((calendarEvents[i].extraMeetings[j].meetingTime[1] - calendarEvents[i].extraMeetings[j].meetingTime[0]) / 100) * hourSpacing
+                for(let k = 0; k < calendarEvents[i].extraMeetings[j].daysOfWeek.length; k++) {
+                    if(!calendarEvents[i].extraMeetings[j].daysOfWeek[k]) continue
+                    context.fillRect(legendPoint + (vertDividerSpacing * k) + 1,headerPoint + startDiffExtra,vertDividerSpacing,heightExtra)
+                }
+            }
+        }
+    }
+
+    function clearCanvas() {
+        context.clearRect(0,0,canvas.width,canvas.height)
     }
 
     function renderCalendar() {
+        clearCanvas()
         renderGrid()
+        renderEvents()
     }
 
     function resizeCanvas() {
@@ -92,7 +127,7 @@
         canvas.width = width
         canvas.height = height
 
-        console.log(canvasDimensions)
+        // console.log(canvasDimensions)
     }
 
     onMount(() => {
@@ -103,7 +138,7 @@
     })
 
     $effect(() => {
-
+        renderCalendar()
     })
 </script>
 

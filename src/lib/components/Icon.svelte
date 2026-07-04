@@ -1,11 +1,15 @@
 <script>
-    let {name} = $props()
+    let {name, fontSize = 'default'} = $props()
 </script>
 
 {#if name === undefined || name === null}
     <p>Icon is Missing Name</p>
 {:else}
-    <span>{name}</span>
+    {#if fontSize === 'default'}
+        <span style="font-size: inherit">{name}</span>
+    {:else}
+        <span style="font-size: {fontSize}">{name}</span>
+    {/if}
 {/if}
 
 <style lang="scss">
@@ -13,10 +17,8 @@
 
     span {
         font-family: $iconFont;
-        font-size: inherit;
         color: inherit;
         padding: 0;
         line-height: 1;
-        display: block;
     }
 </style>

@@ -1,10 +1,9 @@
 <script>
     import Calendar from "$lib/components/Calendar.svelte";
-    import Icon from "$lib/components/Icon.svelte";
-    import IconButton from "$lib/components/IconButton.svelte";
     import ToggleButton from "../lib/components/ToggleButton.svelte";
-    import { format12hrTime } from '$lib/index.js'
-    let {cEvents = $bindable()} = $props()
+    import { format12hrTime, formatDaysOfWeek, loadVisibleItems, saveVisibility } from '$lib/index.js'
+    import { onMount } from "svelte";
+    let {cEvents = []} = $props()
     
     const calendarID = 'main'
     let timeScale = $state([8,23])
@@ -12,27 +11,43 @@
     'button-quinary','button-senary','button-septenary','button-octonary'
     ]
     let buttonActive = $state(new Array(8).fill(true))
+
+    onMount(() => {
+        buttonActive = loadVisibleItems()
+    })
+
+    $effect(() => {
+        saveVisibility(buttonActive)
+    })
 </script>
 
-<h1>Schedule Viewer</h1>
-<div class="flexRow">
+<div class="flexRow" style="margin: 5vh 0 5vh 0">
     <div id="classesHolder" class="surface-base">
         {#if cEvents.length > 0}
             {#each cEvents as item, i }
                 <div class="flexCol surface-1" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw;">
                     <div class="flexRowVariant headerRow">
-                        <h1 class="title">CSCE {1010 + (i * 10)}.<span style="font-size: 20px">101</span></h1>
+                        <h1 class="title">{item.coursePrefix} {item.courseCode}.<span style="font-size: 20px">{item.sectionNumber}</span></h1>
                         <ToggleButton iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
                     </div>
-                    <p><strong>Course Name</strong> | <strong>Room</strong></p>
-                    <p><strong>Meeting Time:</strong> {format12hrTime(800)}-{format12hrTime(920)} | <strong>Days:</strong> M, W, F</p>
+                    <p><strong>{item.courseName}</strong> | <strong>{item.room}</strong></p>
+                    <p><strong>Meeting Time:</strong> {format12hrTime(item.meetingTime[0])}-{format12hrTime(item.meetingTime[1])} | <strong>Days:</strong> {formatDaysOfWeek(item.daysOfWeek)}</p>
+                    
+                    {#if item.extraMeetings.length > 0}
+                        <strong><br>Extra Sections:</strong>
+                        {#each item.extraMeetings as extraItem}
+                            <p class="surface-2" style="margin: 2px 0 2px 0">
+                                <strong>{extraItem.meetingType} {extraItem.sectionNumber} | {extraItem.room} | {format12hrTime(extraItem.meetingTime[0])}-{format12hrTime(extraItem.meetingTime[1])} | Days: {formatDaysOfWeek(extraItem.daysOfWeek)}</strong>
+                            </p>
+                        {/each}
+                    {/if}
                 </div>
             {/each}
         {:else}
-            <h3>No Classes Displayed</h3>
+            <h2 class="surface-1">No Classes Available</h2>
         {/if}
     </div>
-    <Calendar bind:calendarEvents={cEvents} calendarID={calendarID} bind:timeScale />
+    <Calendar calendarEvents={cEvents} calendarID={calendarID} bind:timeScale eventVisibility={buttonActive} />
 </div>
 
 <style lang="scss">
@@ -66,7 +81,7 @@
 
     .title {
         margin: 0;
-        flex: 1; /* THIS is what pushes the button right */
-        text-align: left; /* override your global center */
+        flex: 1; 
+        text-align: left;
     }
 </style>
