@@ -4,11 +4,13 @@
     import Documentation from "./Documentation.svelte";
     import Schedule from "./Schedule.svelte";
     import ButtonGroup from "$lib/components/ButtonGroup.svelte";
+    import Credits from "./Credits.svelte";
 
     const mainTabs = [
         {name: 'Schedule Builder'},
         {name: 'Configuration'},
-        {name: 'Docs'}
+        {name: 'Docs'},
+        {name: 'Credits'}
     ]
 
     let selectedMainTab = $state(0)
@@ -22,6 +24,8 @@
     <Configuration />
 {:else if selectedMainTab === 2}
     <Documentation />
+{:else if selectedMainTab === 3}
+    <Credits />
 {:else}
     <h1>Invalid Tab</h1>
 {/if}

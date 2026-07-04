@@ -6,7 +6,7 @@
     {#if buttons.length > 0}
         {#each buttons as button, i}
             <button 
-            class="{i === 0 ? 'left' : `${i === buttons.length-1 ? 'right' : ''}`} {selected === i ? 'button-primary selected' : 'button-secondary'}"
+            class="{i === 0 ? 'left' : `${i === buttons.length-1 ? 'right' : ''}`} {selected === i ? 'button-primary selected' : ''}"
             onclick={() => {selected = i}}>{button.name}</button>
         {/each}
     {:else}
@@ -21,6 +21,8 @@
         color: $error;
     }
     button {
+        margin-left: 1px;
+        maright-right: 1px;
         border-radius: 12px;
     }
 
