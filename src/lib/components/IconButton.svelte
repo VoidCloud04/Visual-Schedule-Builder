@@ -1,14 +1,18 @@
 <script>
     import Icon from "./Icon.svelte";
-    const { name, type = 'primary', disabled = false } = $props()
+    const { name, disabledName = name, type = '', disabled = false } = $props()
 
 </script>
 
-<button class='button-{type}' disabled={disabled}>
-    <Icon name={name} />
+<button class='{type}' disabled={disabled}>
+    <Icon name={disabled ? disabledName : name} />
 </button>
 
-<style>
+<style lang="scss">
+    @use '$lib/styles/variables' as *;
+
+
+
     button {
         width: 32px;
         height: 32px;

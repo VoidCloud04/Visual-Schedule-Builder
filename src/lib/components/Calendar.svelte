@@ -23,7 +23,6 @@
         context.fillRect(0,headerPoint,canvasDimensions.width,2)
         // Time Legend Divider
         const legendPoint = canvasDimensions.width * 0.0725
-        context.fillRect(legendPoint,0,2,canvasDimensions.height)
         const fontSize = canvasDimensions.height * 0.0265
         context.font = `${fontSize}px Inter`
         context.textAlign = "center"
@@ -31,10 +30,6 @@
         // context.fillRect(0,0,legendPoint,headerPoint)
         // Vertical Dividers
         const vertDividerSpacing = (canvasDimensions.width - legendPoint) / days.length
-        for(let i = 1; i <= days.length; i++) {
-            context.fillRect((vertDividerSpacing * i) + legendPoint,0,2,canvasDimensions.height)
-            // console.log(`${i} -> Divider`)
-        }
         // Days of The Week Text
         for (let i = 0; i < days.length; i++) {
             const x = legendPoint + vertDividerSpacing * i + vertDividerSpacing / 2
@@ -73,6 +68,12 @@
             const colorFill = i % 2 == 0 ? colors.onSurface : colors.primary
             context.fillStyle = colorFill
             context.fillText(`${timeFormatted}:00`,2,y)
+        }
+        // Vertical Divider Lines
+        context.fillRect(legendPoint,0,2,canvasDimensions.height)
+        for(let i = 1; i <= days.length; i++) {
+            context.fillRect((vertDividerSpacing * i) + legendPoint,0,2,canvasDimensions.height)
+            // console.log(`${i} -> Divider`)
         }
     }
 
@@ -117,7 +118,7 @@
         height: 40vw;
         width: 40vw;
 
-        border: 2px solid $border;
+        border: 2px solid $surface;
         border-radius: 12px;
 
         background-color: $surface;
