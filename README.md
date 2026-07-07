@@ -1,4 +1,5 @@
 # Visual Schedule Builder
+[![Deploy to GitHub Pages](https://github.com/VoidCloud04/Visual-Schedule-Builder/actions/workflows/deploy.yml/badge.svg)](https://github.com/VoidCloud04/Visual-Schedule-Builder/actions/workflows/deploy.yml)
 ### Created By VoidCloud
 ### Tech Stack:
 - `pnpm` - Package Manager
