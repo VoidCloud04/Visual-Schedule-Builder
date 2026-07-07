@@ -1,10 +1,10 @@
 <script>
     import Icon from "./Icon.svelte";
-    const { name, disabledName = name, type = '', disabled = false, action = () => {console.warn('No Action')} } = $props()
+    const { name, title='', disabledName = name, type = '', buttonType= 'button', disabled = false, onClick = () => {console.warn('No Action')} } = $props()
 
 </script>
 
-<button class='{type}' disabled={disabled} onclick={action}>
+<button class='{type}' title={title} disabled={disabled} onclick={onClick} type={buttonType}>
     <Icon name={disabled ? disabledName : name} />
 </button>
 

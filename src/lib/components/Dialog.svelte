@@ -25,6 +25,8 @@
     .dialog {
         max-width: 90vw;
         max-height: 90vh;
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 8px;
     }
 </style>

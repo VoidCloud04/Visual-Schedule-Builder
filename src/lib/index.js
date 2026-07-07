@@ -52,6 +52,12 @@ export function format12hrTime(timeVal) {
     return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes} ${timePrefix}`
 }
 
+export function timeConverter(timeStr) {
+    const [hours, minutes] = timeStr.split(":").map(Number)
+
+    return hours * 100 + minutes
+}
+
 export function formatDaysOfWeek(dowArr) {
     let dayArr = new Array()
     for(let i = 0; i < dowArr.length; i++) {
@@ -69,6 +75,10 @@ export function saveData(calendarEvents, visibilityArray) {
 
 export function saveVisibility(visibilityArray) {
     window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
+}
+
+export function saveCalendarEvents(calendarEvents) {
+    window.localStorage.setItem('calendarEvents',btoa(JSON.stringify(calendarEvents)))
 }
 
 export function loadCalendarEvents() {
