@@ -34,8 +34,8 @@ export const colorsArray = [
   '#7998ff',
   '#ff79db',
   '#6fe7ff',
-  '#7fe7c2',
   '#ffd38a',
+  '#7fe7c2',
   '#5a5cff',
   '#ff7b7b',
   '#ff9f7a'
@@ -45,8 +45,8 @@ export const colorsVarArray = [
   '#bacdff',
   '#ffbfee',
   '#a9f2ff',
-  '#bff3df',
   '#ffe4b3',
+  '#bff3df',
   '#8a8cff',
   '#ffaaaa',
   '#ffc2a8'
