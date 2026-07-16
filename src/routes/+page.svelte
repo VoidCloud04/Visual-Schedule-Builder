@@ -1,13 +1,13 @@
 <script>
     import Header from "./Header.svelte";
     import Configuration from "./Configuration.svelte";
-    import Documentation from "./Documentation.svelte";
     import Schedule from "./Schedule.svelte";
     import ButtonGroup from "$lib/components/ButtonGroup.svelte";
     import Credits from "./Credits.svelte";
     import Snackbar from "../lib/components/Snackbar.svelte";
     import { onMount } from "svelte";
     import { loadCalendarEvents } from '$lib/index.js'
+    import Settings from "./Settings.svelte";
 
     const mainTabs = [
         {name: 'Schedule Viewer'},
@@ -32,7 +32,7 @@
 {:else if selectedMainTab === 1}
     <Configuration bind:cEvents={cEvents} />
 {:else if selectedMainTab === 2}
-    <Documentation />
+    <Settings />
 {:else if selectedMainTab === 3}
     <Credits />
 {:else}

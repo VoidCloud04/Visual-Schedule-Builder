@@ -147,10 +147,10 @@
             {#each cEvents as item, i }
                 <div class="flexCol surface-1" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw;">
                     <div class="flexRowVariant headerRow">
-                        <h1 class="title">{item.coursePrefix} {item.courseCode}.<span style="font-size: 20px">{item.sectionNumber}</span></h1>
+                        <h1 class="title">{item.courseName}</h1>
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
-                    <p><strong>{item.courseName}</strong> | <strong>{item.room}</strong></p>
+                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber} | <strong>{item.room}</strong></p>
                     <p><strong>Meeting Time:</strong> {format12hrTime(item.meetingTime[0])}-{format12hrTime(item.meetingTime[1])} | <strong>Days:</strong> {formatDaysOfWeek(item.daysOfWeek)}</p>
                     
                     {#if item.extraMeetings.length > 0}
@@ -213,7 +213,7 @@
             <h3>Extra Meetings</h3>
             {#if protoCourse.extraMeetings.length === 0}
                 <div class="buttonRow">
-                    <IconButton name="add" type="button-quaternary" onClick={() => {addExtraMeeting()}} style="margin-right: 8px"/>
+                    <IconButton name="add" type="button-primary" onClick={() => {addExtraMeeting()}} style="margin-right: 8px"/>
                 </div>
             {/if}
             {#each protoCourse.extraMeetings as item, i}
@@ -246,14 +246,14 @@
                         <input bind:checked={item.daysOfWeek[4]} type="checkbox">
                     <div class="buttonRow">
                         {#if i === protoCourse.extraMeetings.length-1}
-                            <IconButton name="add" title="Add Extra Meeting" type="button-quaternary" onClick={() => {addExtraMeeting()}}/>
+                            <IconButton name="add" title="Add Extra Meeting" type="button-primary" onClick={() => {addExtraMeeting()}}/>
                         {/if}
                         <IconButton name="delete" title="Delete Extra Meeting {i+1}" type="button-septenary" onClick={() => {deleteExtraMeeting(i)}}/>
                     </div>
                 </div>
             {/each}
             <div class="buttonRow">
-                <button title="Course Submission Button" type="button" onclick={() => {validateEvent()}} class="button-quaternary">Add Course</button>
+                <button title="Course Submission Button" type="button" onclick={() => {validateEvent()}} class="button-primary">Add Course</button>
                 <button title="Dialog Close Button" type="button" onclick={() => {addDialogActive = !addDialogActive}} class="button-septenary">Cancel</button>
             </div>
         </form>
@@ -266,7 +266,7 @@
             <h1>Are you sure?</h1>
             <p>This will permanently delete {cEvents[deleteIndex].courseCode} {cEvents[deleteIndex].coursePrefix}</p>
             <div class="buttonRow">
-                <button class="button-quaternary" onclick={() => {deleteEvent(deleteIndex); deleteEventActive = false; deleteIndex = 0}}>Yes</button>
+                <button class="button-primary" onclick={() => {deleteEvent(deleteIndex); deleteEventActive = false; deleteIndex = 0}}>Yes</button>
                 <button class="button-septenary" onclick={() => {deleteEventActive = false; deleteIndex = 0}}>No</button>
             </div>
         {/if}

@@ -27,10 +27,10 @@
             {#each cEvents as item, i }
                 <div class="flexCol surface-1" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw;">
                     <div class="flexRowVariant headerRow">
-                        <h1 class="title">{item.coursePrefix} {item.courseCode}.<span style="font-size: 20px">{item.sectionNumber}</span></h1>
+                        <h1 class="title">{item.courseName}</h1>
                         <ToggleButton iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
                     </div>
-                    <p><strong>{item.courseName}</strong> | <strong>{item.room}</strong></p>
+                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber} | <strong>{item.room}</strong></p>
                     <p><strong>Meeting Time:</strong> {format12hrTime(item.meetingTime[0])}-{format12hrTime(item.meetingTime[1])} | <strong>Days:</strong> {formatDaysOfWeek(item.daysOfWeek)}</p>
                     
                     {#if item.extraMeetings.length > 0}
