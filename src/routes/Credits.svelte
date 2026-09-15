@@ -2,6 +2,7 @@
     <h2>Code</h2>
     <ul>
         <li><strong>VoidCloud</strong></li>
+        <li><strong>OpenCode</strong> - Assisted with partial implementation and served as an experiment in learning Spec Driven Development</li>
     </ul>
     <h2>Fonts</h2>
     <ul>

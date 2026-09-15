@@ -5,6 +5,7 @@ export function createCalendarObject() {
         sectionNumber: "",
         courseName: "",
         room: "",
+        online: false,
         meetingTime: [0, 2400],
         daysOfWeek: Array(5).fill(false),
         extraMeetings: []
@@ -68,17 +69,45 @@ export function formatDaysOfWeek(dowArr) {
     return dayArr.join(', ')
 }
 
-export function saveData(calendarEvents, visibilityArray) {
-    window.localStorage.setItem('calendarEvents',btoa(JSON.stringify(calendarEvents)))
-    window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
+export function encodeData(data) {
+    const json = JSON.stringify(data)
+    const bytes = new TextEncoder().encode(json)
+    let binary = ''
+    for (const byte of bytes) binary += String.fromCharCode(byte)
+    return btoa(binary)
 }
 
-export function saveVisibility(visibilityArray) {
-    window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
+export function decodeData(encoded) {
+    const binary = atob(encoded)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    return JSON.parse(new TextDecoder().decode(bytes))
+}
+
+export function saveData(calendarEvents, visibilityArray) {
+    window.localStorage.setItem('calendarEvents',encodeData(calendarEvents))
+    window.localStorage.setItem('visibleItems',encodeData(visibilityArray))
+}
+
+export function saveVisibility(semesterId, visibilityArray) {
+    window.localStorage.setItem(`visibleItems-${semesterId}`, encodeData(visibilityArray))
+}
+
+export function saveExtraVisibility(semesterId, extraVisibilityArray) {
+    window.localStorage.setItem(`extraVisibleItems-${semesterId}`, encodeData(extraVisibilityArray))
+}
+
+export function loadExtraVisibility(semesterId) {
+    const loadedData = window.localStorage.getItem(`extraVisibleItems-${semesterId}`)
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No Extra Visibility Data Available in Local Storage')
+        return new Array()
+    }
+    return decodeData(loadedData)
 }
 
 export function saveCalendarEvents(calendarEvents) {
-    window.localStorage.setItem('calendarEvents',btoa(JSON.stringify(calendarEvents)))
+    window.localStorage.setItem('calendarEvents',encodeData(calendarEvents))
 }
 
 export function loadCalendarEvents() {
@@ -87,14 +116,68 @@ export function loadCalendarEvents() {
         console.warn('No Calendar Events Available in Local Storage')
         return new Array()
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
 }
 
-export function loadVisibleItems() {
-    const loadedData = window.localStorage.getItem('visibleItems')
+export function loadVisibleItems(semesterId) {
+    const loadedData = window.localStorage.getItem(`visibleItems-${semesterId}`)
     if(loadedData === undefined || loadedData === null) {
         console.warn('No Visibility Data Available in Local Storage')
-        return new Array(8).fill(true)
+        return new Array()
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
+}
+
+export function createSemester(name) {
+    const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
+    return {id, name}
+}
+
+export function saveSemesters(semesters, selectedId) {
+    window.localStorage.setItem('semesterList', encodeData({semesters, selectedId}))
+}
+
+export function loadSemesters() {
+    const loadedData = window.localStorage.getItem('semesterList')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No Semester Data Available in Local Storage')
+        return null
+    }
+    return decodeData(loadedData)
+}
+
+export function saveSemesterClasses(semesterId, classes) {
+    window.localStorage.setItem(`semester-${semesterId}`, encodeData(classes))
+}
+
+export function loadSemesterClasses(semesterId) {
+    const loadedData = window.localStorage.getItem(`semester-${semesterId}`)
+    if(loadedData === undefined || loadedData === null) {
+        console.warn(`No Calendar Events Available for Semester ${semesterId}`)
+        return new Array()
+    }
+    return decodeData(loadedData)
+}
+
+export function deleteSemester(semesterId) {
+    window.localStorage.removeItem(`semester-${semesterId}`)
+}
+
+export function timeToInput(timeVal) {
+    const hours = Math.floor(timeVal / 100).toString().padStart(2, '0')
+    const minutes = (timeVal % 100).toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+}
+
+export function save24HourSetting(value) {
+    window.localStorage.setItem('use24Hour', encodeData(value))
+}
+
+export function load24HourSetting() {
+    const loadedData = window.localStorage.getItem('use24Hour')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No 24 Hour Setting Available in Local Storage')
+        return false
+    }
+    return decodeData(loadedData)
 }

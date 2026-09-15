@@ -14,3 +14,4 @@
 - Inspired by [Material Design 3](https://m3.material.io/)
 ### Code Contributors:
 - VoidCloud
+- OpenCode was used to implement refinement tasks exclusively. Base UI features and other systems were implemented by Void.

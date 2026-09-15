@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { colors, colorsArray } from "$lib/styles/colors";
 
-    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility} = $props()
+    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility, extraVisibility = [], use24Hour = false} = $props()
 
     let canvas
     let context
@@ -14,6 +14,15 @@
         {name: "Wednesday"},
         {name: "Thursday"},
         {name: "Friday"}]
+
+    function getBannerMetrics() {
+        const headerPoint = canvasDimensions.height * 0.0725
+        const timeIntervalWidth = (timeScale[1] - timeScale[0])
+        const fullSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
+        const onlineCount = calendarEvents.reduce((count, event, i) => count + (event.online && (eventVisibility[i] ?? true) ? 1 : 0), 0)
+        if (onlineCount === 0) return {reserve: 0, bannerHeight: fullSpacing}
+        return {reserve: onlineCount * fullSpacing + (onlineCount - 1) * 2, bannerHeight: fullSpacing}
+    }
     // Rendering Code
 
     function renderGrid() {
@@ -22,7 +31,7 @@
         const headerPoint = canvasDimensions.height * 0.0725 // top sixteenth is header
         context.fillRect(0,headerPoint,canvasDimensions.width,2)
         // Time Legend Divider
-        const legendPoint = canvasDimensions.width * 0.0725
+        const legendPoint = canvasDimensions.width * (use24Hour ? 0.1 : 0.0725)
         const fontSize = canvasDimensions.height * 0.0265
         context.font = `${fontSize}px Inter`
         context.textAlign = "center"
@@ -39,12 +48,15 @@
         }
         // Horizontal Dividers
         const timeIntervalWidth = (timeScale[1] - timeScale[0])
-        const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
+        const {reserve} = getBannerMetrics()
+        const drawableHeight = canvasDimensions.height - headerPoint - reserve
+        const horiDividerSpacing = drawableHeight / (timeIntervalWidth * 2)
         const hourSpacing = horiDividerSpacing * 2
         // console.log(`Time Intervals: ${timeScale[0]}-${timeScale[1]}=${timeIntervalWidth}`)
         // console.log(`Divider Spacing (.5hr)/(1hr): ${horiDividerSpacing}/${hourSpacing}`)
         for(let i = 0; i < timeIntervalWidth * 2; i++) {
             // console.log(`${i} -> Horizontal Divider`)
+            if(headerPoint + (horiDividerSpacing * i) >= headerPoint + drawableHeight) break
             if(i % 2 != 0) { // Half Hour Mark
                 context.fillStyle = colors.border
             } 
@@ -63,15 +75,15 @@
         for(let i = 0; i < timeIntervalWidth; i++) {
             const y = headerPoint + (hourSpacing * i) + fontSize * 0.5
             const time = (timeScale[0]) + i
-            const timeFormatted = time > 12 ? time - 12 : time
+            const timeFormatted = use24Hour ? `${String(time).padStart(2, '0')}:00` : `${time > 12 ? time - 12 : time}:00`
             const colorFill = i % 2 == 0 ? colors.onSurface : colors.primary
             context.fillStyle = colorFill
-            context.fillText(`${timeFormatted}:00`,2,y)
+            context.fillText(timeFormatted,2,y)
         }
         // Vertical Divider Lines
-        context.fillRect(legendPoint,0,2,canvasDimensions.height)
+        context.fillRect(legendPoint,0,2,headerPoint + drawableHeight)
         for(let i = 1; i <= days.length; i++) {
-            context.fillRect((vertDividerSpacing * i) + legendPoint,0,2,canvasDimensions.height)
+            context.fillRect((vertDividerSpacing * i) + legendPoint,0,2,headerPoint + drawableHeight)
             // console.log(`${i} -> Divider`)
         }
     }
@@ -79,27 +91,37 @@
     function renderEvents() {
         if(calendarEvents.length === 0) return null
         const headerPoint = canvasDimensions.height * 0.0725
-        const legendPoint = canvasDimensions.width * 0.0725
+        const legendPoint = canvasDimensions.width * (use24Hour ? 0.1 : 0.0725)
         const timeIntervalWidth = (timeScale[1] - timeScale[0])
+        const {reserve, bannerHeight} = getBannerMetrics()
+        const drawableHeight = canvasDimensions.height - headerPoint - reserve
         const vertDividerSpacing = (canvasDimensions.width - legendPoint) / days.length
-        const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
+        const horiDividerSpacing = drawableHeight / (timeIntervalWidth * 2)
         const hourSpacing = horiDividerSpacing * 2
 
+        const onlineEvents = []
 
         for(let i = 0; i < calendarEvents.length; i++) {
-            if(!eventVisibility[i]) continue
+            if(calendarEvents[i].online) {
+                if(eventVisibility[i]) onlineEvents.push(colorsArray[i])
+                continue
+            }
 
-            context.fillStyle = `${colorsArray[i]}bf`
-            const startDiff = ((calendarEvents[i].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
-            const height = ((calendarEvents[i].meetingTime[1] - calendarEvents[i].meetingTime[0]) / 100) * hourSpacing
-            for(let j = 0; j < calendarEvents[i].daysOfWeek.length; j++) {
-                if(!calendarEvents[i].daysOfWeek[j]) continue
-                context.fillRect(legendPoint + (vertDividerSpacing * j) + 1,headerPoint + startDiff,vertDividerSpacing,height)
+            if(eventVisibility[i]) {
+                context.fillStyle = `${colorsArray[i]}bf`
+                const startDiff = ((calendarEvents[i].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
+                const height = ((calendarEvents[i].meetingTime[1] - calendarEvents[i].meetingTime[0]) / 100) * hourSpacing
+                for(let j = 0; j < calendarEvents[i].daysOfWeek.length; j++) {
+                    if(!calendarEvents[i].daysOfWeek[j]) continue
+                    context.fillRect(legendPoint + (vertDividerSpacing * j) + 1,headerPoint + startDiff,vertDividerSpacing,height)
+                }
             }
 
             if(calendarEvents[i].extraMeetings.length === 0) continue
             for(let j = 0; j < calendarEvents[i].extraMeetings.length; j++) {
+                if(!eventVisibility[i] || !extraVisibility?.[i]?.[j]) continue
 
+                context.fillStyle = `${colorsArray[i]}bf`
                 const startDiffExtra = ((calendarEvents[i].extraMeetings[j].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
                 const heightExtra = ((calendarEvents[i].extraMeetings[j].meetingTime[1] - calendarEvents[i].extraMeetings[j].meetingTime[0]) / 100) * hourSpacing
                 for(let k = 0; k < calendarEvents[i].extraMeetings[j].daysOfWeek.length; k++) {
@@ -107,6 +129,19 @@
                     context.fillRect(legendPoint + (vertDividerSpacing * k) + 1,headerPoint + startDiffExtra,vertDividerSpacing,heightExtra)
                 }
             }
+        }
+
+        if(onlineEvents.length === 0) return
+        const fontSize = bannerHeight * 0.5
+        context.font = `${fontSize}px Inter`
+        context.textAlign = "center"
+        context.textBaseline = "middle"
+        for(let k = 0; k < onlineEvents.length; k++) {
+            const bannerY = canvasDimensions.height - bannerHeight - (bannerHeight + 2) * k
+            context.fillStyle = `${onlineEvents[k]}bf`
+            context.fillRect(legendPoint + 1, bannerY, canvasDimensions.width - legendPoint - 2, bannerHeight)
+            context.fillStyle = colors.onSurface
+            context.fillText('Online Class', (legendPoint + canvasDimensions.width) / 2, bannerY + bannerHeight / 2)
         }
     }
 
