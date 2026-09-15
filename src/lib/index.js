@@ -78,6 +78,19 @@ export function saveVisibility(visibilityArray) {
     window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
 }
 
+export function saveExtraVisibility(extraVisibilityArray) {
+    window.localStorage.setItem('extraVisibleItems',btoa(JSON.stringify(extraVisibilityArray)))
+}
+
+export function loadExtraVisibility() {
+    const loadedData = window.localStorage.getItem('extraVisibleItems')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No Extra Visibility Data Available in Local Storage')
+        return new Array()
+    }
+    return JSON.parse(atob(loadedData))
+}
+
 export function saveCalendarEvents(calendarEvents) {
     window.localStorage.setItem('calendarEvents',btoa(JSON.stringify(calendarEvents)))
 }

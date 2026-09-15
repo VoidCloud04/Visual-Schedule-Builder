@@ -6,7 +6,7 @@
 - Semesters Display
 - Course editing
 ### From UAT
-- Meeting day and time on separate line
+- Meeting day and time on separate line **[Done]**
 - Course Name as Heading not Course Prefix, Code & Section Number **[Done]**
-- Room Number on different line
-- Extra sections retain parent color but display in their own container. Make container surface-2/3
+- Room Number on different line **[Done]**
+- Extra sections retain parent color but display in their own container. Make container surface-2/3 **[Done]**

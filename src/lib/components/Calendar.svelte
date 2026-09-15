@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { colors, colorsArray } from "$lib/styles/colors";
 
-    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility} = $props()
+    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility, extraVisibility = []} = $props()
 
     let canvas
     let context
@@ -88,24 +88,26 @@
         const onlineEvents = []
 
         for(let i = 0; i < calendarEvents.length; i++) {
-            if(!eventVisibility[i]) continue
-
             if(calendarEvents[i].online) {
-                onlineEvents.push(colorsArray[i])
+                if(eventVisibility[i]) onlineEvents.push(colorsArray[i])
                 continue
             }
 
-            context.fillStyle = `${colorsArray[i]}bf`
-            const startDiff = ((calendarEvents[i].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
-            const height = ((calendarEvents[i].meetingTime[1] - calendarEvents[i].meetingTime[0]) / 100) * hourSpacing
-            for(let j = 0; j < calendarEvents[i].daysOfWeek.length; j++) {
-                if(!calendarEvents[i].daysOfWeek[j]) continue
-                context.fillRect(legendPoint + (vertDividerSpacing * j) + 1,headerPoint + startDiff,vertDividerSpacing,height)
+            if(eventVisibility[i]) {
+                context.fillStyle = `${colorsArray[i]}bf`
+                const startDiff = ((calendarEvents[i].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
+                const height = ((calendarEvents[i].meetingTime[1] - calendarEvents[i].meetingTime[0]) / 100) * hourSpacing
+                for(let j = 0; j < calendarEvents[i].daysOfWeek.length; j++) {
+                    if(!calendarEvents[i].daysOfWeek[j]) continue
+                    context.fillRect(legendPoint + (vertDividerSpacing * j) + 1,headerPoint + startDiff,vertDividerSpacing,height)
+                }
             }
 
             if(calendarEvents[i].extraMeetings.length === 0) continue
             for(let j = 0; j < calendarEvents[i].extraMeetings.length; j++) {
+                if(!eventVisibility[i] || !extraVisibility?.[i]?.[j]) continue
 
+                context.fillStyle = `${colorsArray[i]}bf`
                 const startDiffExtra = ((calendarEvents[i].extraMeetings[j].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
                 const heightExtra = ((calendarEvents[i].extraMeetings[j].meetingTime[1] - calendarEvents[i].extraMeetings[j].meetingTime[0]) / 100) * hourSpacing
                 for(let k = 0; k < calendarEvents[i].extraMeetings[j].daysOfWeek.length; k++) {

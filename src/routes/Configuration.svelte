@@ -4,20 +4,29 @@
     import IconButton from '$lib/components/IconButton.svelte'
     import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, saveCalendarEvents } from '$lib/index.js'
     import { onMount } from 'svelte';
+    import { colorsArray } from '$lib/styles/colors';
     import Dialog from '../lib/components/Dialog.svelte';
     import FAB from '../lib/components/FAB.svelte';
     import { snackbar } from '../lib/components/scripts/snackbar.svelte';
     
     let addDialogActive = $state(false)
     let deleteEventActive = $state(false)
+    let deleteExtraActive = $state(false)
     let protoCourse = $state({...createCalendarObject(), extraMeetings: new Array(1).fill(createExtraMeeting())})
     let startTime = $state("00:00")
     let endTime = $state("12:00")
     let extraTimes = $state(new Array(1).fill(["00:00","12:00"]))
     let deleteIndex = $state(0)
+    let deleteExtraCourseIndex = $state(0)
+    let deleteExtraItemIndex = $state(0)
 
     function deleteEvent(index) {
         cEvents.splice(index,1)
+        saveCalendarEvents(cEvents)
+    }
+
+    function deleteExtraSection(courseIndex, itemIndex) {
+        cEvents[courseIndex].extraMeetings.splice(itemIndex,1)
         saveCalendarEvents(cEvents)
     }
 
@@ -152,20 +161,29 @@
                         <h1 class="title">{item.courseName}</h1>
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
-                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber} | <strong>{item.online ? 'Online Class' : item.room}</strong></p>
-                    {#if !item.online}
-                    <p><strong>Meeting Time:</strong> {format12hrTime(item.meetingTime[0])}-{format12hrTime(item.meetingTime[1])} | <strong>Days:</strong> {formatDaysOfWeek(item.daysOfWeek)}</p>
-                    {/if}
-                    
-                    {#if !item.online && item.extraMeetings.length > 0}
-                        <strong><br>Extra Sections:</strong>
-                        {#each item.extraMeetings as extraItem}
-                            <p class="surface-2" style="margin: 2px 0 2px 0">
-                                <strong>{extraItem.meetingType} {extraItem.sectionNumber} | {extraItem.room} | {format12hrTime(extraItem.meetingTime[0])}-{format12hrTime(extraItem.meetingTime[1])} | Days: {formatDaysOfWeek(extraItem.daysOfWeek)}</strong>
-                            </p>
-            {/each}
+                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
+                    {#if item.online}
+                        <p><strong>Online Class</strong></p>
+                    {:else}
+                        <p><strong>Room:</strong> {item.room}</p>
+                        <p><strong>Meeting Time:</strong> {format12hrTime(item.meetingTime[0])} - {format12hrTime(item.meetingTime[1])}</p>
+                        <p><strong>Days:</strong> {formatDaysOfWeek(item.daysOfWeek)}</p>
                     {/if}
                 </div>
+
+                {#if !item.online && item.extraMeetings.length > 0}
+                    {#each item.extraMeetings as extraItem, j}
+                        <div class="flexCol surface-2" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw; border-color: {colorsArray[i]};">
+                            <div class="flexRowVariant headerRow">
+                                <h2 class="title">{extraItem.meetingType} {extraItem.sectionNumber}</h2>
+                                <IconButton name='delete' type='button-septenary' onClick={() => {deleteExtraActive = true; deleteExtraCourseIndex = i; deleteExtraItemIndex = j}}/>
+                            </div>
+                            <p><strong>Room:</strong> {extraItem.room}</p>
+                            <p><strong>Meeting Time:</strong> {format12hrTime(extraItem.meetingTime[0])} - {format12hrTime(extraItem.meetingTime[1])}</p>
+                            <p><strong>Days:</strong> {formatDaysOfWeek(extraItem.daysOfWeek)}</p>
+                        </div>
+                    {/each}
+                {/if}
             {/each}
         {:else}
             <h2 class="surface-1">No Classes Available</h2>
@@ -280,6 +298,19 @@
             <div class="buttonRow">
                 <button class="button-primary" onclick={() => {deleteEvent(deleteIndex); deleteEventActive = false; deleteIndex = 0}}>Yes</button>
                 <button class="button-septenary" onclick={() => {deleteEventActive = false; deleteIndex = 0}}>No</button>
+            </div>
+        {/if}
+    {/snippet}
+</Dialog>
+
+<Dialog disabled={deleteExtraActive}>
+    {#snippet content()}
+        {#if cEvents[deleteExtraCourseIndex]?.extraMeetings[deleteExtraItemIndex]}
+            <h1>Are you sure?</h1>
+            <p>This will permanently delete {cEvents[deleteExtraCourseIndex].extraMeetings[deleteExtraItemIndex].meetingType} {cEvents[deleteExtraCourseIndex].extraMeetings[deleteExtraItemIndex].sectionNumber}</p>
+            <div class="buttonRow">
+                <button class="button-primary" onclick={() => {deleteExtraSection(deleteExtraCourseIndex, deleteExtraItemIndex); deleteExtraActive = false; deleteExtraCourseIndex = 0; deleteExtraItemIndex = 0}}>Yes</button>
+                <button class="button-septenary" onclick={() => {deleteExtraActive = false; deleteExtraCourseIndex = 0; deleteExtraItemIndex = 0}}>No</button>
             </div>
         {/if}
     {/snippet}
