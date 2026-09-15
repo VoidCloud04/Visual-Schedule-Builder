@@ -30,10 +30,12 @@
                         <h1 class="title">{item.courseName}</h1>
                         <ToggleButton iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
                     </div>
-                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber} | <strong>{item.room}</strong></p>
+                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber} | <strong>{item.online ? 'Online Class' : item.room}</strong></p>
+                    {#if !item.online}
                     <p><strong>Meeting Time:</strong> {format12hrTime(item.meetingTime[0])}-{format12hrTime(item.meetingTime[1])} | <strong>Days:</strong> {formatDaysOfWeek(item.daysOfWeek)}</p>
+                    {/if}
                     
-                    {#if item.extraMeetings.length > 0}
+                    {#if !item.online && item.extraMeetings.length > 0}
                         <strong><br>Extra Sections:</strong>
                         {#each item.extraMeetings as extraItem}
                             <p class="surface-2" style="margin: 2px 0 2px 0">

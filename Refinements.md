@@ -1,12 +1,12 @@
 # Planned Refinements
 ### From Developer
-- Online course flag
+- Online course flag **[Done]**
 - Course conflict display. In Calendar and Viewer
 - Hour Count
 - Semesters Display
 - Course editing
 ### From UAT
 - Meeting day and time on separate line
-- Course Name as Heading not Course Prefix, Code & Section Number
+- Course Name as Heading not Course Prefix, Code & Section Number **[Done]**
 - Room Number on different line
 - Extra sections retain parent color but display in their own container. Make container surface-2/3

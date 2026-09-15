@@ -61,38 +61,40 @@
             return
         }
 
-        if(protoCourse.room.length === 0) {
+        if(!protoCourse.online && protoCourse.room.length === 0) {
             snackbar.show("Course is missing a room, ex: Wh 101", "error")
             return
         }
 
-        const courseStart = timeConverter(startTime)
-        const courseEnd = timeConverter(endTime)
-        
-        if(courseStart >= courseEnd) {
-            snackbar.show("Course cannot start when or after it is supposed to end", "error")
-            return
-        }
-        else {
-            protoCourse.meetingTime[0] = courseStart
-            protoCourse.meetingTime[1] = courseEnd
-        }
+        if(!protoCourse.online) {
+            const courseStart = timeConverter(startTime)
+            const courseEnd = timeConverter(endTime)
+            
+            if(courseStart >= courseEnd) {
+                snackbar.show("Course cannot start when or after it is supposed to end", "error")
+                return
+            }
+            else {
+                protoCourse.meetingTime[0] = courseStart
+                protoCourse.meetingTime[1] = courseEnd
+            }
 
-        let foundDay = false
+            let foundDay = false
 
-        for(let i = 0; i < protoCourse.daysOfWeek.length; i++) {
-            if(protoCourse.daysOfWeek[i] === true) {
-                foundDay = true
-                break
+            for(let i = 0; i < protoCourse.daysOfWeek.length; i++) {
+                if(protoCourse.daysOfWeek[i] === true) {
+                    foundDay = true
+                    break
+                }
+            }
+
+            if(!foundDay) {
+                snackbar.show("Course has to at least take place one day a week", "error")
+                return
             }
         }
 
-        if(!foundDay) {
-            snackbar.show("Course has to at least take place one day a week", "error")
-            return
-        }
-
-        if(protoCourse.extraMeetings.length > 0) {
+        if(protoCourse.extraMeetings.length > 0 && !protoCourse.online) {
             for (let i = 0; i < protoCourse.extraMeetings.length; i++) {
                 const item = protoCourse.extraMeetings[i]
 
@@ -150,16 +152,18 @@
                         <h1 class="title">{item.courseName}</h1>
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
-                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber} | <strong>{item.room}</strong></p>
+                    <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber} | <strong>{item.online ? 'Online Class' : item.room}</strong></p>
+                    {#if !item.online}
                     <p><strong>Meeting Time:</strong> {format12hrTime(item.meetingTime[0])}-{format12hrTime(item.meetingTime[1])} | <strong>Days:</strong> {formatDaysOfWeek(item.daysOfWeek)}</p>
+                    {/if}
                     
-                    {#if item.extraMeetings.length > 0}
+                    {#if !item.online && item.extraMeetings.length > 0}
                         <strong><br>Extra Sections:</strong>
                         {#each item.extraMeetings as extraItem}
                             <p class="surface-2" style="margin: 2px 0 2px 0">
                                 <strong>{extraItem.meetingType} {extraItem.sectionNumber} | {extraItem.room} | {format12hrTime(extraItem.meetingTime[0])}-{format12hrTime(extraItem.meetingTime[1])} | Days: {formatDaysOfWeek(extraItem.daysOfWeek)}</strong>
                             </p>
-                        {/each}
+            {/each}
                     {/if}
                 </div>
             {/each}
@@ -183,10 +187,15 @@
             <hr>
             <h3>Course Details</h3>
                 <input bind:value={protoCourse.courseName}  placeholder="Course Name" required>
-                <input bind:value={protoCourse.room}  placeholder="Course Location/Room" required>
+                <label for="online">Online Course:</label>
+                <input bind:checked={protoCourse.online} type="checkbox">
+                {#if !protoCourse.online}
+                    <input bind:value={protoCourse.room}  placeholder="Course Location/Room" required>
+                {/if}
             <div class="formRow">
 
             </div>
+            {#if !protoCourse.online}
             <hr>
             <h3>Meeting Time</h3>
                 <label for="start">Start Time:</label>
@@ -211,12 +220,14 @@
                 <input bind:checked={protoCourse.daysOfWeek[4]} type="checkbox">
             <hr>
             <h3>Extra Meetings</h3>
-            {#if protoCourse.extraMeetings.length === 0}
+            {/if}
+            {#if protoCourse.extraMeetings.length === 0 && !protoCourse.online}
                 <div class="buttonRow">
                     <IconButton name="add" type="button-primary" onClick={() => {addExtraMeeting()}} style="margin-right: 8px"/>
                 </div>
             {/if}
-            {#each protoCourse.extraMeetings as item, i}
+            {#if !protoCourse.online}
+                {#each protoCourse.extraMeetings as item, i}
                 <div class="surface-3">
                     <h4>Meeting Details</h4>
                         <input bind:value={item.meetingType} placeholder="Meeting Type" required>
@@ -252,6 +263,7 @@
                     </div>
                 </div>
             {/each}
+            {/if}
             <div class="buttonRow">
                 <button title="Course Submission Button" type="button" onclick={() => {validateEvent()}} class="button-primary">Add Course</button>
                 <button title="Dialog Close Button" type="button" onclick={() => {addDialogActive = !addDialogActive}} class="button-septenary">Cancel</button>

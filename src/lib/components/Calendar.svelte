@@ -85,9 +85,15 @@
         const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
         const hourSpacing = horiDividerSpacing * 2
 
+        const onlineEvents = []
 
         for(let i = 0; i < calendarEvents.length; i++) {
             if(!eventVisibility[i]) continue
+
+            if(calendarEvents[i].online) {
+                onlineEvents.push(colorsArray[i])
+                continue
+            }
 
             context.fillStyle = `${colorsArray[i]}bf`
             const startDiff = ((calendarEvents[i].meetingTime[0] / 100) - timeScale[0]) * hourSpacing
@@ -107,6 +113,20 @@
                     context.fillRect(legendPoint + (vertDividerSpacing * k) + 1,headerPoint + startDiffExtra,vertDividerSpacing,heightExtra)
                 }
             }
+        }
+
+        if(onlineEvents.length === 0) return
+        const bannerHeight = horiDividerSpacing
+        const fontSize = bannerHeight * 0.5
+        context.font = `${fontSize}px Inter`
+        context.textAlign = "center"
+        context.textBaseline = "middle"
+        for(let k = 0; k < onlineEvents.length; k++) {
+            const bannerY = canvasDimensions.height - bannerHeight - (bannerHeight + 2) * k
+            context.fillStyle = `${onlineEvents[k]}bf`
+            context.fillRect(legendPoint + 1, bannerY, canvasDimensions.width - legendPoint - 2, bannerHeight)
+            context.fillStyle = colors.onSurface
+            context.fillText('Online Class', (legendPoint + canvasDimensions.width) / 2, bannerY + bannerHeight / 2)
         }
     }
 
