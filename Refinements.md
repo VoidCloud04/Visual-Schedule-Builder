@@ -3,8 +3,8 @@
 - Online course flag **[Done]**
 - Course conflict display. In Calendar and Viewer
 - Hour Count
-- Semesters Display
-- Course editing
+- Semesters Display **[Done]**
+- Course editing **[Done]**
 ### From UAT
 - Meeting day and time on separate line **[Done]**
 - Course Name as Heading not Course Prefix, Code & Section Number **[Done]**

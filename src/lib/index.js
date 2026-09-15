@@ -112,3 +112,57 @@ export function loadVisibleItems() {
     }
     return JSON.parse(atob(loadedData))
 }
+
+export function createSemester(name) {
+    const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
+    return {id, name}
+}
+
+export function saveSemesters(semesters, selectedId) {
+    window.localStorage.setItem('semesterList', btoa(JSON.stringify({semesters, selectedId})))
+}
+
+export function loadSemesters() {
+    const loadedData = window.localStorage.getItem('semesterList')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No Semester Data Available in Local Storage')
+        return null
+    }
+    return JSON.parse(atob(loadedData))
+}
+
+export function saveSemesterClasses(semesterId, classes) {
+    window.localStorage.setItem(`semester-${semesterId}`, btoa(JSON.stringify(classes)))
+}
+
+export function loadSemesterClasses(semesterId) {
+    const loadedData = window.localStorage.getItem(`semester-${semesterId}`)
+    if(loadedData === undefined || loadedData === null) {
+        console.warn(`No Calendar Events Available for Semester ${semesterId}`)
+        return new Array()
+    }
+    return JSON.parse(atob(loadedData))
+}
+
+export function deleteSemester(semesterId) {
+    window.localStorage.removeItem(`semester-${semesterId}`)
+}
+
+export function timeToInput(timeVal) {
+    const hours = Math.floor(timeVal / 100).toString().padStart(2, '0')
+    const minutes = (timeVal % 100).toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+}
+
+export function save24HourSetting(value) {
+    window.localStorage.setItem('use24Hour', btoa(JSON.stringify(value)))
+}
+
+export function load24HourSetting() {
+    const loadedData = window.localStorage.getItem('use24Hour')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No 24 Hour Setting Available in Local Storage')
+        return false
+    }
+    return JSON.parse(atob(loadedData))
+}

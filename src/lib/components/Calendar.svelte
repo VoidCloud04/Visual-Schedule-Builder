@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { colors, colorsArray } from "$lib/styles/colors";
 
-    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility, extraVisibility = []} = $props()
+    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility, extraVisibility = [], use24Hour = false} = $props()
 
     let canvas
     let context
@@ -22,7 +22,7 @@
         const headerPoint = canvasDimensions.height * 0.0725 // top sixteenth is header
         context.fillRect(0,headerPoint,canvasDimensions.width,2)
         // Time Legend Divider
-        const legendPoint = canvasDimensions.width * 0.0725
+        const legendPoint = canvasDimensions.width * (use24Hour ? 0.1 : 0.0725)
         const fontSize = canvasDimensions.height * 0.0265
         context.font = `${fontSize}px Inter`
         context.textAlign = "center"
@@ -63,10 +63,10 @@
         for(let i = 0; i < timeIntervalWidth; i++) {
             const y = headerPoint + (hourSpacing * i) + fontSize * 0.5
             const time = (timeScale[0]) + i
-            const timeFormatted = time > 12 ? time - 12 : time
+            const timeFormatted = use24Hour ? `${String(time).padStart(2, '0')}:00` : `${time > 12 ? time - 12 : time}:00`
             const colorFill = i % 2 == 0 ? colors.onSurface : colors.primary
             context.fillStyle = colorFill
-            context.fillText(`${timeFormatted}:00`,2,y)
+            context.fillText(timeFormatted,2,y)
         }
         // Vertical Divider Lines
         context.fillRect(legendPoint,0,2,canvasDimensions.height)
@@ -79,7 +79,7 @@
     function renderEvents() {
         if(calendarEvents.length === 0) return null
         const headerPoint = canvasDimensions.height * 0.0725
-        const legendPoint = canvasDimensions.width * 0.0725
+        const legendPoint = canvasDimensions.width * (use24Hour ? 0.1 : 0.0725)
         const timeIntervalWidth = (timeScale[1] - timeScale[0])
         const vertDividerSpacing = (canvasDimensions.width - legendPoint) / days.length
         const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)

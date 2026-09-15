@@ -1,17 +1,26 @@
 <script>
-    let {cEvents = $bindable()} = $props()
+    let {cEvents = $bindable(), semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, onCreateSemester = () => {}, onRenameSemester = () => {}, onDeleteSemester = () => {}} = $props()
 
     import IconButton from '$lib/components/IconButton.svelte'
-    import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, saveCalendarEvents } from '$lib/index.js'
+    import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, timeToInput } from '$lib/index.js'
     import { onMount } from 'svelte';
     import { colorsArray } from '$lib/styles/colors';
     import Dialog from '../lib/components/Dialog.svelte';
     import FAB from '../lib/components/FAB.svelte';
+    import ButtonGroup from '../lib/components/ButtonGroup.svelte';
     import { snackbar } from '../lib/components/scripts/snackbar.svelte';
     
     let addDialogActive = $state(false)
     let deleteEventActive = $state(false)
     let deleteExtraActive = $state(false)
+    let editMode = $state(false)
+    let editIndex = $state(0)
+    let renameActive = $state(false)
+    let renameIndex = $state(0)
+    let renameInput = $state('')
+    let createSemesterActive = $state(false)
+    let createSemesterInput = $state('')
+    let deleteSemesterActive = $state(false)
     let protoCourse = $state({...createCalendarObject(), extraMeetings: new Array(1).fill(createExtraMeeting())})
     let startTime = $state("00:00")
     let endTime = $state("12:00")
@@ -20,23 +29,46 @@
     let deleteExtraCourseIndex = $state(0)
     let deleteExtraItemIndex = $state(0)
 
+    let semesterButtons = $derived(semesters.map(semester => ({name: semester.name})))
+    let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
+
+    function changeSemester(index) {
+        if(index >= 0 && index < semesters.length) switchSemester(index)
+    }
+
+    function startCreate() {
+        editMode = false
+        protoCourse = {...createCalendarObject(), extraMeetings: new Array(1).fill(createExtraMeeting())}
+        startTime = "00:00"
+        endTime = "12:00"
+        extraTimes = new Array(1).fill(["00:00","12:00"])
+        addDialogActive = true
+    }
+
+    function startEdit(index) {
+        editMode = true
+        editIndex = index
+        protoCourse = structuredClone($state.snapshot(cEvents[index]))
+        if(!protoCourse.online) {
+            startTime = timeToInput(protoCourse.meetingTime[0])
+            endTime = timeToInput(protoCourse.meetingTime[1])
+        }
+        extraTimes = protoCourse.extraMeetings.map(meeting => [timeToInput(meeting.meetingTime[0]), timeToInput(meeting.meetingTime[1])])
+        addDialogActive = true
+    }
+
     function deleteEvent(index) {
         cEvents.splice(index,1)
-        saveCalendarEvents(cEvents)
     }
 
     function deleteExtraSection(courseIndex, itemIndex) {
         cEvents[courseIndex].extraMeetings.splice(itemIndex,1)
-        saveCalendarEvents(cEvents)
     }
 
     function addEvent() {
         cEvents.push(structuredClone($state.snapshot(protoCourse)))
-        console.log($state.snapshot(protoCourse))
         protoCourse = {...createCalendarObject(), extraMeetings: new Array(1).fill(createExtraMeeting())}
         extraTimes = new Array(1).fill(["00:00","12:00"])
-
-        saveCalendarEvents(cEvents)
     }
 
     function deleteExtraMeeting(index) {
@@ -49,7 +81,47 @@
         extraTimes.push(["00:00","12:00"])
     }
 
+    function startCreateSemester() {
+        if(semesters.length >= 4) {
+            snackbar.show("You cannot have more than four semesters", "error")
+            return
+        }
+        createSemesterInput = ''
+        createSemesterActive = true
+    }
+
+    function confirmCreateSemester() {
+        if(createSemesterInput.trim().length === 0) {
+            snackbar.show("Semester name cannot be empty", "error")
+            return
+        }
+        onCreateSemester(createSemesterInput.trim())
+        createSemesterActive = false
+    }
+
+    function startRename(index) {
+        renameIndex = index
+        renameInput = semesters[index]?.name ?? ''
+        renameActive = true
+    }
+
+    function confirmRename() {
+        if(renameInput.trim().length === 0) {
+            snackbar.show("Semester name cannot be empty", "error")
+            return
+        }
+        onRenameSemester(renameInput.trim(), renameIndex)
+        renameActive = false
+    }
+
+    function confirmDeleteSemester() {
+        onDeleteSemester(semesterIndex)
+        deleteSemesterActive = false
+    }
+
     function validateEvent() {
+        let foundDay = false
+
         if(protoCourse.coursePrefix.length === 0) {
             snackbar.show("Course is missing a prefix, ex: CSCE", "error")
             return
@@ -87,8 +159,6 @@
                 protoCourse.meetingTime[0] = courseStart
                 protoCourse.meetingTime[1] = courseEnd
             }
-
-            let foundDay = false
 
             for(let i = 0; i < protoCourse.daysOfWeek.length; i++) {
                 if(protoCourse.daysOfWeek[i] === true) {
@@ -146,19 +216,36 @@
         }
 
         // This will only occur if all validations pass
-        addEvent()
+        if(editMode) {
+            cEvents[editIndex] = structuredClone($state.snapshot(protoCourse))
+            editMode = false
+            editIndex = 0
+            addDialogActive = false
+        }
+        else {
+            addEvent()
+        }
     }
 
 </script>
 
-<FAB iconName="add" type="primary" disabled={addDialogActive || cEvents.length >= 8} onClick={() => {addDialogActive = !addDialogActive}}/>
+<FAB iconName="add" type="primary" disabled={addDialogActive || cEvents.length >= 8} onClick={startCreate}/>
 <div class="flexCol" style="margin: 5vh 0 5vh 0">
+    <div class="flexRowVariant semesterHeader">
+        <ButtonGroup buttons={semesterButtons} bind:selected={() => Math.max(semesterIndex, 0), (index) => changeSemester(index)}/>
+        <div class="flexRow">
+            <IconButton name="add" title="Add Semester" type="button-primary" disabled={semesters.length >= 4} onClick={startCreateSemester}/>
+            <IconButton name="edit" title="Rename Semester" type="button-tertiary" disabled={semesters.length === 0} onClick={() => {startRename(Math.max(semesterIndex, 0))}}/>
+            <IconButton name="delete" title="Delete Semester" type="button-septenary" disabled={semesters.length <= 1} onClick={() => {deleteSemesterActive = true}}/>
+        </div>
+    </div>
     <div id="classesHolder" class="surface-base">
         {#if cEvents.length > 0}
             {#each cEvents as item, i }
                 <div class="flexCol surface-1" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw;">
                     <div class="flexRowVariant headerRow">
                         <h1 class="title">{item.courseName}</h1>
+                        <IconButton name='edit' title="Edit Course" type='button-tertiary' onClick={() => {startEdit(i)}}/>
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
                     <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
@@ -176,6 +263,7 @@
                         <div class="flexCol surface-2" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw; border-color: {colorsArray[i]};">
                             <div class="flexRowVariant headerRow">
                                 <h2 class="title">{extraItem.meetingType} {extraItem.sectionNumber}</h2>
+                                <IconButton name='edit' title="Edit Course" type='button-tertiary' onClick={() => {startEdit(i)}}/>
                                 <IconButton name='delete' type='button-septenary' onClick={() => {deleteExtraActive = true; deleteExtraCourseIndex = i; deleteExtraItemIndex = j}}/>
                             </div>
                             <p><strong>Room:</strong> {extraItem.room}</p>
@@ -193,7 +281,7 @@
 <Dialog disabled={addDialogActive}>
     {#snippet content()}
         <form>
-            <h2>Add Course</h2>
+            <h2>{editMode ? 'Edit Course' : 'Add Course'}</h2>
             <hr>
             <h3>Course Name</h3>
                 <input bind:value={protoCourse.coursePrefix} placeholder="Course Prefix" required>
@@ -283,7 +371,7 @@
             {/each}
             {/if}
             <div class="buttonRow">
-                <button title="Course Submission Button" type="button" onclick={() => {validateEvent()}} class="button-primary">Add Course</button>
+                <button title="Course Submission Button" type="button" onclick={() => {validateEvent()}} class="button-primary">{editMode ? 'Save Changes' : 'Add Course'}</button>
                 <button title="Dialog Close Button" type="button" onclick={() => {addDialogActive = !addDialogActive}} class="button-septenary">Cancel</button>
             </div>
         </form>
@@ -316,6 +404,45 @@
     {/snippet}
 </Dialog>
 
+<Dialog disabled={createSemesterActive}>
+    {#snippet content()}
+        <form>
+            <h1>New Semester</h1>
+            <input bind:value={createSemesterInput} placeholder="Semester Name" required>
+            <div class="buttonRow">
+                <button class="button-primary" title="Create Semester Button" type="button" onclick={() => {confirmCreateSemester()}}>Create</button>
+                <button class="button-septenary" title="Cancel Create Button" type="button" onclick={() => {createSemesterActive = false}}>Cancel</button>
+            </div>
+        </form>
+    {/snippet}
+</Dialog>
+
+<Dialog disabled={renameActive}>
+    {#snippet content()}
+        <form>
+            <h1>Rename Semester</h1>
+            <input bind:value={renameInput} placeholder="Semester Name" required>
+            <div class="buttonRow">
+                <button class="button-primary" title="Rename Semester Button" type="button" onclick={() => {confirmRename()}}>Rename</button>
+                <button class="button-septenary" title="Cancel Rename Button" type="button" onclick={() => {renameActive = false}}>Cancel</button>
+            </div>
+        </form>
+    {/snippet}
+</Dialog>
+
+<Dialog disabled={deleteSemesterActive}>
+    {#snippet content()}
+        {#if semesters[semesterIndex]}
+            <h1>Are you sure?</h1>
+            <p>This will permanently delete {semesters[semesterIndex].name} and all of its classes.</p>
+            <div class="buttonRow">
+                <button class="button-primary" onclick={() => {confirmDeleteSemester()}}>Yes</button>
+                <button class="button-septenary" onclick={() => {deleteSemesterActive = false}}>No</button>
+            </div>
+        {/if}
+    {/snippet}
+</Dialog>
+
 <style lang="scss">
     @use '$lib/styles/variables' as *;
 
@@ -338,6 +465,11 @@
         * {
             margin: 0;
         }
+    }
+
+    .semesterHeader {
+        width: 40vw;
+        margin-bottom: 1vh;
     }
 
     .headerRow {
