@@ -14,6 +14,15 @@
         {name: "Wednesday"},
         {name: "Thursday"},
         {name: "Friday"}]
+
+    function getBannerMetrics() {
+        const headerPoint = canvasDimensions.height * 0.0725
+        const timeIntervalWidth = (timeScale[1] - timeScale[0])
+        const fullSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
+        const onlineCount = calendarEvents.reduce((count, event, i) => count + (event.online && (eventVisibility[i] ?? true) ? 1 : 0), 0)
+        if (onlineCount === 0) return {reserve: 0, bannerHeight: fullSpacing}
+        return {reserve: onlineCount * fullSpacing + (onlineCount - 1) * 2, bannerHeight: fullSpacing}
+    }
     // Rendering Code
 
     function renderGrid() {
@@ -39,12 +48,15 @@
         }
         // Horizontal Dividers
         const timeIntervalWidth = (timeScale[1] - timeScale[0])
-        const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
+        const {reserve} = getBannerMetrics()
+        const drawableHeight = canvasDimensions.height - headerPoint - reserve
+        const horiDividerSpacing = drawableHeight / (timeIntervalWidth * 2)
         const hourSpacing = horiDividerSpacing * 2
         // console.log(`Time Intervals: ${timeScale[0]}-${timeScale[1]}=${timeIntervalWidth}`)
         // console.log(`Divider Spacing (.5hr)/(1hr): ${horiDividerSpacing}/${hourSpacing}`)
         for(let i = 0; i < timeIntervalWidth * 2; i++) {
             // console.log(`${i} -> Horizontal Divider`)
+            if(headerPoint + (horiDividerSpacing * i) >= headerPoint + drawableHeight) break
             if(i % 2 != 0) { // Half Hour Mark
                 context.fillStyle = colors.border
             } 
@@ -69,9 +81,9 @@
             context.fillText(timeFormatted,2,y)
         }
         // Vertical Divider Lines
-        context.fillRect(legendPoint,0,2,canvasDimensions.height)
+        context.fillRect(legendPoint,0,2,headerPoint + drawableHeight)
         for(let i = 1; i <= days.length; i++) {
-            context.fillRect((vertDividerSpacing * i) + legendPoint,0,2,canvasDimensions.height)
+            context.fillRect((vertDividerSpacing * i) + legendPoint,0,2,headerPoint + drawableHeight)
             // console.log(`${i} -> Divider`)
         }
     }
@@ -81,8 +93,10 @@
         const headerPoint = canvasDimensions.height * 0.0725
         const legendPoint = canvasDimensions.width * (use24Hour ? 0.1 : 0.0725)
         const timeIntervalWidth = (timeScale[1] - timeScale[0])
+        const {reserve, bannerHeight} = getBannerMetrics()
+        const drawableHeight = canvasDimensions.height - headerPoint - reserve
         const vertDividerSpacing = (canvasDimensions.width - legendPoint) / days.length
-        const horiDividerSpacing = (canvasDimensions.height - headerPoint) / (timeIntervalWidth * 2)
+        const horiDividerSpacing = drawableHeight / (timeIntervalWidth * 2)
         const hourSpacing = horiDividerSpacing * 2
 
         const onlineEvents = []
@@ -118,7 +132,6 @@
         }
 
         if(onlineEvents.length === 0) return
-        const bannerHeight = horiDividerSpacing
         const fontSize = bannerHeight * 0.5
         context.font = `${fontSize}px Inter`
         context.textAlign = "center"

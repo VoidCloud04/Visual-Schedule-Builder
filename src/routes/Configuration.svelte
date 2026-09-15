@@ -1,5 +1,5 @@
 <script>
-    let {cEvents = $bindable(), semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, onCreateSemester = () => {}, onRenameSemester = () => {}, onDeleteSemester = () => {}} = $props()
+    let {cEvents = $bindable(), semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, onCreateSemester = () => {}, onRenameSemester = () => {}, onDeleteSemester = () => {}, onDeleteCourse = () => {}, onDeleteExtra = () => {}} = $props()
 
     import IconButton from '$lib/components/IconButton.svelte'
     import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, timeToInput } from '$lib/index.js'
@@ -59,10 +59,12 @@
 
     function deleteEvent(index) {
         cEvents.splice(index,1)
+        onDeleteCourse(index)
     }
 
     function deleteExtraSection(courseIndex, itemIndex) {
         cEvents[courseIndex].extraMeetings.splice(itemIndex,1)
+        onDeleteExtra(courseIndex, itemIndex)
     }
 
     function addEvent() {
@@ -79,6 +81,13 @@
     function addExtraMeeting() {
         protoCourse.extraMeetings.push(createExtraMeeting())
         extraTimes.push(["00:00","12:00"])
+    }
+
+    function handleOnlineToggle(checked) {
+        if (checked && protoCourse.extraMeetings.length > 0) {
+            protoCourse.extraMeetings = []
+            extraTimes = []
+        }
     }
 
     function startCreateSemester() {
@@ -215,6 +224,11 @@
             }
         }
 
+        if(protoCourse.online) {
+            protoCourse.extraMeetings = []
+            extraTimes = []
+        }
+
         // This will only occur if all validations pass
         if(editMode) {
             cEvents[editIndex] = structuredClone($state.snapshot(protoCourse))
@@ -263,7 +277,6 @@
                         <div class="flexCol surface-2" style="align-items: flex-start; text-align: left; padding: 0.3vh 0.3vw 0.3vh 0.3vw; border-color: {colorsArray[i]};">
                             <div class="flexRowVariant headerRow">
                                 <h2 class="title">{extraItem.meetingType} {extraItem.sectionNumber}</h2>
-                                <IconButton name='edit' title="Edit Course" type='button-tertiary' onClick={() => {startEdit(i)}}/>
                                 <IconButton name='delete' type='button-septenary' onClick={() => {deleteExtraActive = true; deleteExtraCourseIndex = i; deleteExtraItemIndex = j}}/>
                             </div>
                             <p><strong>Room:</strong> {extraItem.room}</p>
@@ -294,7 +307,7 @@
             <h3>Course Details</h3>
                 <input bind:value={protoCourse.courseName}  placeholder="Course Name" required>
                 <label for="online">Online Course:</label>
-                <input bind:checked={protoCourse.online} type="checkbox">
+                <input id="online" bind:checked={protoCourse.online} type="checkbox" onchange={(event) => handleOnlineToggle(event.currentTarget.checked)}>
                 {#if !protoCourse.online}
                     <input bind:value={protoCourse.room}  placeholder="Course Location/Room" required>
                 {/if}
@@ -304,26 +317,26 @@
             {#if !protoCourse.online}
             <hr>
             <h3>Meeting Time</h3>
-                <label for="start">Start Time:</label>
-                <input bind:value={startTime} type="time" required>
-                <label for="end">End Time:</label>
-                <input bind:value={endTime} type="time" required>
+                <label for="courseStart">Start Time:</label>
+                <input id="courseStart" bind:value={startTime} type="time" required>
+                <label for="courseEnd">End Time:</label>
+                <input id="courseEnd" bind:value={endTime} type="time" required>
             <hr>
             <h3>Meeting Days</h3>
-                <label for="monday">Monday:</label>
-                <input bind:checked={protoCourse.daysOfWeek[0]} type="checkbox">
+                <label for="courseMonday">Monday:</label>
+                <input id="courseMonday" bind:checked={protoCourse.daysOfWeek[0]} type="checkbox">
 
-                <label for="tuesday">Tuesday:</label>
-                <input bind:checked={protoCourse.daysOfWeek[1]} type="checkbox">
+                <label for="courseTuesday">Tuesday:</label>
+                <input id="courseTuesday" bind:checked={protoCourse.daysOfWeek[1]} type="checkbox">
 
-                <label for="wednesday">Wednesday:</label>
-                <input bind:checked={protoCourse.daysOfWeek[2]} type="checkbox">
+                <label for="courseWednesday">Wednesday:</label>
+                <input id="courseWednesday" bind:checked={protoCourse.daysOfWeek[2]} type="checkbox">
 
-                <label for="thursday">Thursday:</label>
-                <input bind:checked={protoCourse.daysOfWeek[3]} type="checkbox">
+                <label for="courseThursday">Thursday:</label>
+                <input id="courseThursday" bind:checked={protoCourse.daysOfWeek[3]} type="checkbox">
 
-                <label for="friday">Friday:</label>
-                <input bind:checked={protoCourse.daysOfWeek[4]} type="checkbox">
+                <label for="courseFriday">Friday:</label>
+                <input id="courseFriday" bind:checked={protoCourse.daysOfWeek[4]} type="checkbox">
             <hr>
             <h3>Extra Meetings</h3>
             {/if}
@@ -341,26 +354,26 @@
                         <input bind:value={item.room} placeholder="Meeting Location/Room" required>
                     <hr>
                     <h4>Meeting Time</h4>
-                        <label for="start">Start Time:</label>
-                        <input bind:value={extraTimes[i][0]} type="time" required>
-                        <label for="end">End Time:</label>
-                        <input bind:value={extraTimes[i][1]} type="time" required>
+                        <label for={`extraStart-${i}`}>Start Time:</label>
+                        <input id={`extraStart-${i}`} bind:value={extraTimes[i][0]} type="time" required>
+                        <label for={`extraEnd-${i}`}>End Time:</label>
+                        <input id={`extraEnd-${i}`} bind:value={extraTimes[i][1]} type="time" required>
                     <hr>
                     <h4>Meeting Days</h4>
-                        <label for="monday">Monday:</label>
-                        <input bind:checked={item.daysOfWeek[0]} type="checkbox">
+                        <label for={`extraMonday-${i}`}>Monday:</label>
+                        <input id={`extraMonday-${i}`} bind:checked={item.daysOfWeek[0]} type="checkbox">
 
-                        <label for="tuesday">Tuesday:</label>
-                        <input bind:checked={item.daysOfWeek[1]} type="checkbox">
+                        <label for={`extraTuesday-${i}`}>Tuesday:</label>
+                        <input id={`extraTuesday-${i}`} bind:checked={item.daysOfWeek[1]} type="checkbox">
 
-                        <label for="wednesday">Wednesday:</label>
-                        <input bind:checked={item.daysOfWeek[2]} type="checkbox">
+                        <label for={`extraWednesday-${i}`}>Wednesday:</label>
+                        <input id={`extraWednesday-${i}`} bind:checked={item.daysOfWeek[2]} type="checkbox">
 
-                        <label for="thursday">Thursday:</label>
-                        <input bind:checked={item.daysOfWeek[3]} type="checkbox">
+                        <label for={`extraThursday-${i}`}>Thursday:</label>
+                        <input id={`extraThursday-${i}`} bind:checked={item.daysOfWeek[3]} type="checkbox">
 
-                        <label for="friday">Friday:</label>
-                        <input bind:checked={item.daysOfWeek[4]} type="checkbox">
+                        <label for={`extraFriday-${i}`}>Friday:</label>
+                        <input id={`extraFriday-${i}`} bind:checked={item.daysOfWeek[4]} type="checkbox">
                     <div class="buttonRow">
                         {#if i === protoCourse.extraMeetings.length-1}
                             <IconButton name="add" title="Add Extra Meeting" type="button-primary" onClick={() => {addExtraMeeting()}}/>

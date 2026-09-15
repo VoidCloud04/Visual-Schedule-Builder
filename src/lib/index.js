@@ -69,30 +69,45 @@ export function formatDaysOfWeek(dowArr) {
     return dayArr.join(', ')
 }
 
+export function encodeData(data) {
+    const json = JSON.stringify(data)
+    const bytes = new TextEncoder().encode(json)
+    let binary = ''
+    for (const byte of bytes) binary += String.fromCharCode(byte)
+    return btoa(binary)
+}
+
+export function decodeData(encoded) {
+    const binary = atob(encoded)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    return JSON.parse(new TextDecoder().decode(bytes))
+}
+
 export function saveData(calendarEvents, visibilityArray) {
-    window.localStorage.setItem('calendarEvents',btoa(JSON.stringify(calendarEvents)))
-    window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
+    window.localStorage.setItem('calendarEvents',encodeData(calendarEvents))
+    window.localStorage.setItem('visibleItems',encodeData(visibilityArray))
 }
 
-export function saveVisibility(visibilityArray) {
-    window.localStorage.setItem('visibleItems',btoa(JSON.stringify(visibilityArray)))
+export function saveVisibility(semesterId, visibilityArray) {
+    window.localStorage.setItem(`visibleItems-${semesterId}`, encodeData(visibilityArray))
 }
 
-export function saveExtraVisibility(extraVisibilityArray) {
-    window.localStorage.setItem('extraVisibleItems',btoa(JSON.stringify(extraVisibilityArray)))
+export function saveExtraVisibility(semesterId, extraVisibilityArray) {
+    window.localStorage.setItem(`extraVisibleItems-${semesterId}`, encodeData(extraVisibilityArray))
 }
 
-export function loadExtraVisibility() {
-    const loadedData = window.localStorage.getItem('extraVisibleItems')
+export function loadExtraVisibility(semesterId) {
+    const loadedData = window.localStorage.getItem(`extraVisibleItems-${semesterId}`)
     if(loadedData === undefined || loadedData === null) {
         console.warn('No Extra Visibility Data Available in Local Storage')
         return new Array()
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
 }
 
 export function saveCalendarEvents(calendarEvents) {
-    window.localStorage.setItem('calendarEvents',btoa(JSON.stringify(calendarEvents)))
+    window.localStorage.setItem('calendarEvents',encodeData(calendarEvents))
 }
 
 export function loadCalendarEvents() {
@@ -101,16 +116,16 @@ export function loadCalendarEvents() {
         console.warn('No Calendar Events Available in Local Storage')
         return new Array()
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
 }
 
-export function loadVisibleItems() {
-    const loadedData = window.localStorage.getItem('visibleItems')
+export function loadVisibleItems(semesterId) {
+    const loadedData = window.localStorage.getItem(`visibleItems-${semesterId}`)
     if(loadedData === undefined || loadedData === null) {
         console.warn('No Visibility Data Available in Local Storage')
-        return new Array(8).fill(true)
+        return new Array()
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
 }
 
 export function createSemester(name) {
@@ -119,7 +134,7 @@ export function createSemester(name) {
 }
 
 export function saveSemesters(semesters, selectedId) {
-    window.localStorage.setItem('semesterList', btoa(JSON.stringify({semesters, selectedId})))
+    window.localStorage.setItem('semesterList', encodeData({semesters, selectedId}))
 }
 
 export function loadSemesters() {
@@ -128,11 +143,11 @@ export function loadSemesters() {
         console.warn('No Semester Data Available in Local Storage')
         return null
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
 }
 
 export function saveSemesterClasses(semesterId, classes) {
-    window.localStorage.setItem(`semester-${semesterId}`, btoa(JSON.stringify(classes)))
+    window.localStorage.setItem(`semester-${semesterId}`, encodeData(classes))
 }
 
 export function loadSemesterClasses(semesterId) {
@@ -141,7 +156,7 @@ export function loadSemesterClasses(semesterId) {
         console.warn(`No Calendar Events Available for Semester ${semesterId}`)
         return new Array()
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
 }
 
 export function deleteSemester(semesterId) {
@@ -155,7 +170,7 @@ export function timeToInput(timeVal) {
 }
 
 export function save24HourSetting(value) {
-    window.localStorage.setItem('use24Hour', btoa(JSON.stringify(value)))
+    window.localStorage.setItem('use24Hour', encodeData(value))
 }
 
 export function load24HourSetting() {
@@ -164,5 +179,5 @@ export function load24HourSetting() {
         console.warn('No 24 Hour Setting Available in Local Storage')
         return false
     }
-    return JSON.parse(atob(loadedData))
+    return decodeData(loadedData)
 }

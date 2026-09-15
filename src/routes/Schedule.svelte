@@ -2,18 +2,15 @@
     import Calendar from "$lib/components/Calendar.svelte";
     import ToggleButton from "../lib/components/ToggleButton.svelte";
     import ButtonGroup from "$lib/components/ButtonGroup.svelte";
-    import { format12hrTime, formatDaysOfWeek, loadVisibleItems, saveVisibility, loadExtraVisibility, saveExtraVisibility } from '$lib/index.js'
-    import { onMount } from "svelte";
+    import { format12hrTime, formatDaysOfWeek } from '$lib/index.js'
     import { colorsArray } from '$lib/styles/colors';
-    let {cEvents = [], semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, use24Hour = false} = $props()
+    let {cEvents = [], semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, use24Hour = false, buttonActive = $bindable(), extraActive = $bindable()} = $props()
     
     const calendarID = 'main'
     let timeScale = $state([8,23])
     const colors = ['button-primary','button-secondary','button-tertiary','button-quaternary',
     'button-quinary','button-senary','button-septenary','button-octonary'
     ]
-    let buttonActive = $state(new Array(8).fill(true))
-    let extraActive = $state([])
 
     let semesterButtons = $derived(semesters.map(semester => ({name: semester.name})))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
@@ -31,27 +28,16 @@
         extraActive[i][j] = value
     }
 
-    onMount(() => {
-        buttonActive = loadVisibleItems()
-        extraActive = loadExtraVisibility()
-    })
-
-    $effect(() => {
-        saveVisibility(buttonActive)
-        saveExtraVisibility(extraActive)
-    })
-
     $effect.pre(() => {
-        const needsSync = cEvents.some((course, i) =>
-            (extraActive[i]?.length ?? -1) !== course.extraMeetings.length
+        const needButtonSync = buttonActive.length !== cEvents.length
+        const needExtraSync = cEvents.some((course, i) =>
+            (extraActive[i]?.length ?? 0) !== course.extraMeetings.length
         )
-        if (needsSync) {
+        if (needButtonSync || needExtraSync) {
+            buttonActive = Array.from({ length: cEvents.length }, (_, i) => buttonActive[i] ?? true)
             extraActive = cEvents.map((course, i) =>
                 Array.from({ length: course.extraMeetings.length }, (_, j) => extraActive[i]?.[j] ?? true)
             )
-        }
-        if (buttonActive.length < cEvents.length) {
-            buttonActive = [...buttonActive, ...new Array(cEvents.length - buttonActive.length).fill(true)]
         }
     })
 </script>
