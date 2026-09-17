@@ -37,7 +37,7 @@
         if(semesters.length >= 4) return
         const newSemester = createSemester(name)
         semesters.push(newSemester)
-        switchSemester(semesters.indexOf(newSemester))
+        switchSemester(semesters.length - 1)
     }
 
     function renameSemester(name, index) {
@@ -56,6 +56,11 @@
         const loaded = loadSemesters()
         if(loaded && loaded.semesters.length > 0) {
             semesters = loaded.semesters
+            semesters.forEach(semester => {
+                if(semester.hourTotal === undefined || semester.hourTotal === null || semester.hourTotal < 0) { // undefined checks to fix pre-1.2 semesters
+                    semester.hourTotal = 0
+                }
+            })
             selectedSemesterId = loaded.selectedId
             if(!semesters.some(semester => semester.id === selectedSemesterId)) {
                 selectedSemesterId = semesters[0].id
@@ -82,7 +87,7 @@
         use24Hour = load24HourSetting()
     })
 
-    function loadDataFromLegacyKey(key) {
+    function loadDataFromLegacyKey(key) { // Remove in awhile (eventually)
         const raw = window.localStorage.getItem(key)
         try {
             return JSON.parse(atob(raw))

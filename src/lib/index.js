@@ -131,7 +131,8 @@ export function loadVisibleItems(semesterId) {
 
 export function createSemester(name) {
     const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
-    return {id, name}
+    const hourTotal = 0
+    return {id, name, hourTotal}
 }
 
 export function saveSemesters(semesters, selectedId) {

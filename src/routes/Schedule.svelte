@@ -11,8 +11,7 @@
     const colors = ['button-primary','button-secondary','button-tertiary','button-quaternary',
     'button-quinary','button-senary','button-septenary','button-octonary'
     ]
-
-    let semesterButtons = $derived(semesters.map(semester => ({name: semester.name})))
+    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} (${semester.hourTotal} Hour${semester.hourTotal > 1 ? 's' : ''})`})))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
 
     function changeSemester(index) {
@@ -55,6 +54,7 @@
                             <ToggleButton iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
                         </div>
                         <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
+                        <p><strong>Hour Count: </strong> {item.hourCount}</p>
                         {#if item.online}
                             <p><strong>Online Class</strong></p>
                         {:else}

@@ -29,8 +29,14 @@
     let deleteExtraCourseIndex = $state(0)
     let deleteExtraItemIndex = $state(0)
 
-    let semesterButtons = $derived(semesters.map(semester => ({name: semester.name})))
+    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} (${semester.hourTotal} Hour${semester.hourTotal > 1 || semester.hourTotal === 1 ? 's' : ''})`})))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
+
+    $effect(() => {
+        const semester = semesters[semesterIndex]
+        if (semesterIndex < 0 || !semester) return
+        semester.hourTotal = cEvents.reduce((total, course) => total + (course.hourCount ?? 0), 0)
+    })
 
     function changeSemester(index) {
         if(index >= 0 && index < semesters.length) switchSemester(index)
@@ -156,8 +162,8 @@
             return
         }
 
-        if(protoCourse.hourCount < 0 || protoCourse > 12) {
-            snackbar.show("Course should have an hour count of 0-12","error")
+        if(protoCourse.hourCount < 0 || protoCourse.hourCount > 12) {
+            snackbar.show("Course should have an hour count between 0-12","error")
             return
         }
 

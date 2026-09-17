@@ -1,5 +1,5 @@
 <script>
-    let {use24Hour = $bindable()} = $props()
+    let {use24Hour = $bindable(), fullTimeReq = $bindable()} = $props()
 </script>
 
     <div class="flexCol" style="margin: 5vh 0 5vh 0">
@@ -13,6 +13,10 @@
             </div>
             <div class="flexCol surface-1">
                 <h3>General Settings</h3>
+                <div class="flexRow">
+                    <label for="ftReq">Full Time Requirement:</label>
+                    <input id="ftReq"  type="number" bind:value={fullTimeReq} min="0">
+                </div>
             </div>
         </div>
     </div>
