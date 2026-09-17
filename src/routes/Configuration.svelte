@@ -156,6 +156,11 @@
             return
         }
 
+        if(protoCourse.hourCount < 0 || protoCourse > 12) {
+            snackbar.show("Course should have an hour count of 0-12","error")
+            return
+        }
+
         if(!protoCourse.online) {
             const courseStart = timeConverter(startTime)
             const courseEnd = timeConverter(endTime)
@@ -263,6 +268,7 @@
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
                     <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
+                    <p><strong>Hour Count: </strong> {item.hourCount}</p>
                     {#if item.online}
                         <p><strong>Online Class</strong></p>
                     {:else}
@@ -314,6 +320,10 @@
             <div class="formRow">
 
             </div>
+            <h3>Hour Count</h3>
+                <label for="courseHours">Hours:</label>
+                <input id="courseHours" bind:value={protoCourse.hourCount} type="number" min="0" max="12">
+            <hr>
             {#if !protoCourse.online}
             <hr>
             <h3>Meeting Time</h3>

@@ -8,7 +8,8 @@ export function createCalendarObject() {
         online: false,
         meetingTime: [0, 2400],
         daysOfWeek: Array(5).fill(false),
-        extraMeetings: []
+        extraMeetings: [],
+        hourCount: 0,
     };
 }
 
