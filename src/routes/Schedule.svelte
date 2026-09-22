@@ -11,7 +11,7 @@
     const colors = ['button-primary','button-secondary','button-tertiary','button-quaternary',
     'button-quinary','button-senary','button-septenary','button-octonary'
     ]
-    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} (${semester.hourTotal} Hour${semester.hourTotal > 1 ? 's' : ''})`})))
+    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} ${semester.hourTotal > 0 ? '('+semester.hourTotal : ''} ${semester.hourTotal > 0 ? `Hour${semester.hourTotal > 1 ? 's' : ''})` : ''}`})))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
 
     function changeSemester(index) {

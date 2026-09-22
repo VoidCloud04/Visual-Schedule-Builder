@@ -11,6 +11,7 @@
 </div>
 
 <style lang="scss">
+    @use 'sass:list';
     @use '$lib/styles/variables' as *;
 
     $chip-colors: (
@@ -37,9 +38,9 @@
 
     @each $name, $colors in $chip-colors {
         .chip.color-#{$name} {
-            border: 2px solid nth($colors, 2);
-            background-color: nth($colors, 1);
-            color: nth($colors, 3);
+            border: 2px solid list.nth($colors, 2);
+            background-color: list.nth($colors, 1);
+            color: list.nth($colors, 3);
         }
     }
     .has-icon {

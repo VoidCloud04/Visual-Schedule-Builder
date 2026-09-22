@@ -29,7 +29,7 @@
     let deleteExtraCourseIndex = $state(0)
     let deleteExtraItemIndex = $state(0)
 
-    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} (${semester.hourTotal} Hour${semester.hourTotal > 1 || semester.hourTotal === 1 ? 's' : ''})`})))
+    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} ${semester.hourTotal > 0 ? '('+semester.hourTotal : ''} ${semester.hourTotal > 0 ? `Hour${semester.hourTotal > 1 ? 's' : ''})` : ''}`})))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
 
     $effect(() => {
