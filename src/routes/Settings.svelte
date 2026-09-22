@@ -1,6 +1,4 @@
 <script>
-    import Chip from "../lib/components/Chip.svelte";
-
     let {use24Hour = $bindable(), minConflictTime = $bindable()} = $props()
 </script>
 
@@ -14,10 +12,10 @@
                 </div>
             </div>
             <div class="flexCol surface-1">
-                <h3>General Settings</h3>
+                <h3>Application Settings</h3>
                 <div class="flexRow">
-                    <label for="minConfTime">Minimum Time for a Conflict to Occur (exclusive):</label>
-                    <input id="minConfTime"  type="number" bind:value={minConflictTime} min="0">
+                    <label for="minConfTime">Minimum conflict gap (minutes):</label>
+                    <input id="minConfTime" type="number" bind:value={minConflictTime} min="0">
                 </div>
             </div>
         </div>

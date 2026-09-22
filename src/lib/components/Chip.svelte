@@ -38,7 +38,7 @@
 
     @each $name, $colors in $chip-colors {
         .chip.color-#{$name} {
-            border: 2px solid list.nth($colors, 2);
+            border: 2px solid list.nth($colors, 1);
             background-color: list.nth($colors, 1);
             color: list.nth($colors, 3);
         }

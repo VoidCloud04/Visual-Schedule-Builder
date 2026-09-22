@@ -183,3 +183,109 @@ export function load24HourSetting() {
     }
     return decodeData(loadedData)
 }
+
+export function timeToMinutes(t) {
+    return Math.floor(t / 100) * 60 + (t % 100)
+}
+
+export function findCourseConflicts(cEvents, minGapMinutes = 10) {
+    const slots = []
+    for (let i = 0; i < cEvents.length; i++) {
+        const course = cEvents[i]
+        if (course.online) continue
+        slots.push({
+            courseIndex: i,
+            meetingTime: course.meetingTime,
+            daysOfWeek: course.daysOfWeek
+        })
+        for (const extra of course.extraMeetings ?? []) {
+            slots.push({
+                courseIndex: i,
+                meetingTime: extra.meetingTime,
+                daysOfWeek: extra.daysOfWeek
+            })
+        }
+    }
+
+    const boxes = []
+    const pairSet = new Set()
+
+    function addBox(a, b, day, start, end) {
+        boxes.push({a, b, day, start, end})
+        const key = a < b ? `${a}-${b}` : `${b}-${a}`
+        pairSet.add(key)
+    }
+
+    for (let x = 0; x < slots.length; x++) {
+        for (let y = x + 1; y < slots.length; y++) {
+            const slotA = slots[x]
+            const slotB = slots[y]
+            if (slotA.courseIndex === slotB.courseIndex) continue
+
+            const sharedDays = []
+            for (let day = 0; day < slotA.daysOfWeek.length; day++) {
+                if (slotA.daysOfWeek[day] && slotB.daysOfWeek[day]) {
+                    sharedDays.push(day)
+                }
+            }
+            if (sharedDays.length === 0) continue
+
+            const startA = slotA.meetingTime[0]
+            const endA = slotA.meetingTime[1]
+            const startB = slotB.meetingTime[0]
+            const endB = slotB.meetingTime[1]
+
+            const dist = Math.max(
+                0,
+                timeToMinutes(startA) - timeToMinutes(endB),
+                timeToMinutes(startB) - timeToMinutes(endA)
+            )
+            if (dist >= minGapMinutes) continue
+
+            let boxStart, boxEnd
+            if (Math.max(startA, startB) < Math.min(endA, endB)) {
+                boxStart = Math.max(startA, startB)
+                boxEnd = Math.min(endA, endB)
+            }
+            else {
+                boxStart = toHHMM(timeToMinutes(Math.min(endA, endB)) - 5)
+                boxEnd = toHHMM(timeToMinutes(Math.max(startA, startB)) + 5)
+            }
+
+            for (const day of sharedDays) {
+                addBox(slotA.courseIndex, slotB.courseIndex, day, boxStart, boxEnd)
+            }
+        }
+    }
+
+    const byCourse = cEvents.map(() => [])
+    for (const key of pairSet) {
+        const [a, b] = key.split('-').map(Number)
+        byCourse[a].push(b)
+        byCourse[b].push(a)
+    }
+    byCourse.forEach(list => list.sort((p, q) => p - q))
+
+    return { byCourse, boxes }
+}
+
+function toHHMM(minutes) {
+    if (minutes < 0) minutes = 0
+    else if (minutes >= 1440) minutes = 1439
+    return Math.floor(minutes / 60) * 100 + (minutes % 60)
+}
+
+export function saveConflictGapSetting(value) {
+    window.localStorage.setItem('conflictGap', encodeData(value))
+}
+
+export function loadConflictGapSetting() {
+    const loadedData = window.localStorage.getItem('conflictGap')
+    if(loadedData === undefined || loadedData === null) {
+        console.warn('No Conflict Gap Setting Available in Local Storage')
+        return 10
+    }
+    const value = decodeData(loadedData)
+    if (typeof value !== 'number' || isNaN(value)) return 10
+    return value
+}

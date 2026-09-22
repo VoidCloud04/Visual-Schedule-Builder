@@ -1,8 +1,8 @@
 <script>
-    let {cEvents = $bindable(), semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, onCreateSemester = () => {}, onRenameSemester = () => {}, onDeleteSemester = () => {}, onDeleteCourse = () => {}, onDeleteExtra = () => {}} = $props()
+    let {cEvents = $bindable(), semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, conflictGap = 10, onCreateSemester = () => {}, onRenameSemester = () => {}, onDeleteSemester = () => {}, onDeleteCourse = () => {}, onDeleteExtra = () => {}} = $props()
 
     import IconButton from '$lib/components/IconButton.svelte'
-    import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, timeToInput } from '$lib/index.js'
+    import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, timeToInput, findCourseConflicts } from '$lib/index.js'
     import { onMount } from 'svelte';
     import { colorsArray } from '$lib/styles/colors';
     import Dialog from '../lib/components/Dialog.svelte';
@@ -31,6 +31,7 @@
     let deleteExtraItemIndex = $state(0)
 
     let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} ${semester.hourTotal > 0 ? '('+semester.hourTotal : ''} ${semester.hourTotal > 0 ? `Hour${semester.hourTotal > 1 ? 's' : ''})` : ''}`})))
+    let conflicts = $derived(findCourseConflicts(cEvents, conflictGap))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
 
     $effect(() => {
@@ -274,7 +275,13 @@
                         <IconButton name='edit' title="Edit Course" type='button-tertiary' onClick={() => {startEdit(i)}}/>
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
-                    <ChipList chipArr={[{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'}]}/>
+                    {#if conflicts.byCourse[i]?.length > 0}
+                        <ChipList chipArr={conflicts.byCourse[i].map(j => ({
+                            text: `${cEvents[j].coursePrefix} ${cEvents[j].courseCode}`,
+                            color: 'septenary',
+                            iconName: 'warning'
+                        }))} />
+                    {/if}
                     <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
                     <p><strong>Hour Count: </strong> {item.hourCount}</p>
                     {#if item.online}

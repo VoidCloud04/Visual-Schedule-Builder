@@ -6,7 +6,7 @@
     import Credits from "./Credits.svelte";
     import Snackbar from "../lib/components/Snackbar.svelte";
     import { onMount } from "svelte";
-    import { loadCalendarEvents, createSemester, saveSemesters, loadSemesters, saveSemesterClasses, loadSemesterClasses, deleteSemester, load24HourSetting, save24HourSetting, saveVisibility, loadVisibleItems, saveExtraVisibility, loadExtraVisibility } from '$lib/index.js'
+    import { loadCalendarEvents, createSemester, saveSemesters, loadSemesters, saveSemesterClasses, loadSemesterClasses, deleteSemester, load24HourSetting, save24HourSetting, saveVisibility, loadVisibleItems, saveExtraVisibility, loadExtraVisibility, loadConflictGapSetting, saveConflictGapSetting } from '$lib/index.js'
     import Settings from "./Settings.svelte";
 
     const mainTabs = [
@@ -22,6 +22,7 @@
     let semesters = $state([])
     let selectedSemesterId = $state('')
     let use24Hour = $state(false)
+    let conflictGap = $state(10)
     let buttonActive = $state([])
     let extraActive = $state([])
 
@@ -85,6 +86,7 @@
             window.localStorage.removeItem('extraVisibleItems')
         }
         use24Hour = load24HourSetting()
+        conflictGap = loadConflictGapSetting()
     })
 
     function loadDataFromLegacyKey(key) { // Remove in awhile (eventually)
@@ -121,16 +123,20 @@
     $effect(() => {
         save24HourSetting(use24Hour)
     })
+
+    $effect(() => {
+        saveConflictGapSetting(conflictGap)
+    })
 </script>
 
 <Header />
 <ButtonGroup buttons={mainTabs} bind:selected={selectedMainTab} />
 {#if selectedMainTab === 0}
-    <Schedule cEvents={cEvents} semesters={semesters} bind:selectedSemester={selectedSemesterId} switchSemester={switchSemester} use24Hour={use24Hour} bind:buttonActive={buttonActive} bind:extraActive={extraActive} />
+    <Schedule cEvents={cEvents} semesters={semesters} bind:selectedSemester={selectedSemesterId} switchSemester={switchSemester} use24Hour={use24Hour} conflictGap={conflictGap} bind:buttonActive={buttonActive} bind:extraActive={extraActive} />
 {:else if selectedMainTab === 1}
-    <Configuration bind:cEvents={cEvents} semesters={semesters} bind:selectedSemester={selectedSemesterId} switchSemester={switchSemester} onCreateSemester={createSemesterEntry} onRenameSemester={renameSemester} onDeleteSemester={removeSemester} onDeleteCourse={deleteCourseVisibility} onDeleteExtra={deleteExtraVisibility} />
+    <Configuration bind:cEvents={cEvents} semesters={semesters} bind:selectedSemester={selectedSemesterId} switchSemester={switchSemester} conflictGap={conflictGap} onCreateSemester={createSemesterEntry} onRenameSemester={renameSemester} onDeleteSemester={removeSemester} onDeleteCourse={deleteCourseVisibility} onDeleteExtra={deleteExtraVisibility} />
 {:else if selectedMainTab === 2}
-    <Settings bind:use24Hour={use24Hour} />
+    <Settings bind:use24Hour={use24Hour} bind:minConflictTime={conflictGap} />
 {:else if selectedMainTab === 3}
     <Credits />
 {:else}
