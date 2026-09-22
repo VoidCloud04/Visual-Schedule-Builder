@@ -1,12 +1,15 @@
 <script>
     import { onMount } from "svelte";
     import { colors, colorsArray } from "$lib/styles/colors";
+    import { findCourseConflicts } from "$lib/index.js";
 
-    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility, extraVisibility = [], use24Hour = false} = $props()
+    let {calendarEvents = [], calendarID, timeScale = $bindable(), eventVisibility, extraVisibility = [], use24Hour = false, minGapMinutes = 10} = $props()
 
     let canvas
     let context
     let canvasDimensions = {height: 0, width: 0}
+
+    let conflicts = $derived(findCourseConflicts(calendarEvents, minGapMinutes))
     
     const days = [
         {name: "Monday"},
@@ -145,6 +148,38 @@
         }
     }
 
+    function renderConflicts() {
+        if(conflicts.boxes.length === 0) return
+        const headerPoint = canvasDimensions.height * 0.0725
+        const legendPoint = canvasDimensions.width * (use24Hour ? 0.1 : 0.0725)
+        const timeIntervalWidth = (timeScale[1] - timeScale[0])
+        const {reserve} = getBannerMetrics()
+        const drawableHeight = canvasDimensions.height - headerPoint - reserve
+        const vertDividerSpacing = (canvasDimensions.width - legendPoint) / days.length
+        const horiDividerSpacing = drawableHeight / (timeIntervalWidth * 2)
+        const hourSpacing = horiDividerSpacing * 2
+
+        for(const box of conflicts.boxes) {
+            if(!eventVisibility[box.a] || !eventVisibility[box.b]) continue
+            if(box.start >= box.end) continue
+            const x = legendPoint + (vertDividerSpacing * box.day) + 1
+            const y = headerPoint + ((box.start / 100) - timeScale[0]) * hourSpacing
+            const height = ((box.end - box.start) / 100) * hourSpacing
+            context.fillStyle = `${colors.error}bf`
+            context.fillRect(x, y, vertDividerSpacing, height)
+            context.strokeStyle = colors.error
+            context.strokeRect(x, y, vertDividerSpacing, height)
+            if(height >= 10) {
+                const fontSize = Math.min(canvasDimensions.height * 0.017, height * 0.6)
+                context.font = `${fontSize}px Inter`
+                context.textAlign = "center"
+                context.textBaseline = "middle"
+                context.fillStyle = colors.onPrimary
+                context.fillText('Time Conflict', x + vertDividerSpacing / 2, y + height / 2)
+            }
+        }
+    }
+
     function clearCanvas() {
         context.clearRect(0,0,canvas.width,canvas.height)
     }
@@ -153,6 +188,7 @@
         clearCanvas()
         renderGrid()
         renderEvents()
+        renderConflicts()
     }
 
     function resizeCanvas() {

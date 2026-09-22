@@ -2,17 +2,18 @@
     import Calendar from "$lib/components/Calendar.svelte";
     import ToggleButton from "../lib/components/ToggleButton.svelte";
     import ButtonGroup from "$lib/components/ButtonGroup.svelte";
-    import { format12hrTime, formatDaysOfWeek } from '$lib/index.js'
+    import { format12hrTime, formatDaysOfWeek, findCourseConflicts } from '$lib/index.js'
     import { colorsArray } from '$lib/styles/colors';
-    let {cEvents = [], semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, use24Hour = false, buttonActive = $bindable(), extraActive = $bindable()} = $props()
+    import ChipList from "../lib/components/ChipList.svelte";
+    let {cEvents = [], semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, use24Hour = false, conflictGap = 10, buttonActive = $bindable(), extraActive = $bindable()} = $props()
     
     const calendarID = 'main'
     let timeScale = $state([8,23])
     const colors = ['button-primary','button-secondary','button-tertiary','button-quaternary',
     'button-quinary','button-senary','button-septenary','button-octonary'
     ]
-
-    let semesterButtons = $derived(semesters.map(semester => ({name: semester.name})))
+    let conflicts = $derived(findCourseConflicts(cEvents, conflictGap))
+    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} ${semester.hourTotal > 0 ? '('+semester.hourTotal : ''} ${semester.hourTotal > 0 ? `Hour${semester.hourTotal > 1 ? 's' : ''})` : ''}`})))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
 
     function changeSemester(index) {
@@ -54,7 +55,15 @@
                             <h1 class="title">{item.courseName}</h1>
                             <ToggleButton iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
                         </div>
+                        {#if conflicts.byCourse[i]?.length > 0}
+                            <ChipList chipArr={conflicts.byCourse[i].map(j => ({
+                                text: `${cEvents[j].coursePrefix} ${cEvents[j].courseCode}`,
+                                color: 'septenary',
+                                iconName: 'warning'
+                            }))} />
+                        {/if}
                         <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
+                        <p><strong>Hour Count: </strong> {item.hourCount}</p>
                         {#if item.online}
                             <p><strong>Online Class</strong></p>
                         {:else}
@@ -82,7 +91,7 @@
                 <h2 class="surface-1">No Classes Available</h2>
             {/if}
         </div>
-        <Calendar calendarEvents={cEvents} calendarID={calendarID} bind:timeScale eventVisibility={buttonActive} extraVisibility={extraActive} use24Hour={use24Hour} />
+        <Calendar calendarEvents={cEvents} calendarID={calendarID} bind:timeScale eventVisibility={buttonActive} extraVisibility={extraActive} use24Hour={use24Hour} minGapMinutes={conflictGap} />
     </div>
 
 <style lang="scss">

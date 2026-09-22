@@ -1,14 +1,15 @@
 <script>
-    let {cEvents = $bindable(), semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, onCreateSemester = () => {}, onRenameSemester = () => {}, onDeleteSemester = () => {}, onDeleteCourse = () => {}, onDeleteExtra = () => {}} = $props()
+    let {cEvents = $bindable(), semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, conflictGap = 10, onCreateSemester = () => {}, onRenameSemester = () => {}, onDeleteSemester = () => {}, onDeleteCourse = () => {}, onDeleteExtra = () => {}} = $props()
 
     import IconButton from '$lib/components/IconButton.svelte'
-    import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, timeToInput } from '$lib/index.js'
+    import { format12hrTime, formatDaysOfWeek, createCalendarObject, createExtraMeeting, timeConverter, timeToInput, findCourseConflicts } from '$lib/index.js'
     import { onMount } from 'svelte';
     import { colorsArray } from '$lib/styles/colors';
     import Dialog from '../lib/components/Dialog.svelte';
     import FAB from '../lib/components/FAB.svelte';
     import ButtonGroup from '../lib/components/ButtonGroup.svelte';
     import { snackbar } from '../lib/components/scripts/snackbar.svelte';
+    import ChipList from '../lib/components/ChipList.svelte';
     
     let addDialogActive = $state(false)
     let deleteEventActive = $state(false)
@@ -29,8 +30,15 @@
     let deleteExtraCourseIndex = $state(0)
     let deleteExtraItemIndex = $state(0)
 
-    let semesterButtons = $derived(semesters.map(semester => ({name: semester.name})))
+    let semesterButtons = $derived(semesters.map(semester => ({name: `${semester.name} ${semester.hourTotal > 0 ? '('+semester.hourTotal : ''} ${semester.hourTotal > 0 ? `Hour${semester.hourTotal > 1 ? 's' : ''})` : ''}`})))
+    let conflicts = $derived(findCourseConflicts(cEvents, conflictGap))
     let semesterIndex = $derived(semesters.findIndex(semester => semester.id === selectedSemester))
+
+    $effect(() => {
+        const semester = semesters[semesterIndex]
+        if (semesterIndex < 0 || !semester) return
+        semester.hourTotal = cEvents.reduce((total, course) => total + (course.hourCount ?? 0), 0)
+    })
 
     function changeSemester(index) {
         if(index >= 0 && index < semesters.length) switchSemester(index)
@@ -156,6 +164,11 @@
             return
         }
 
+        if(protoCourse.hourCount < 0 || protoCourse.hourCount > 12) {
+            snackbar.show("Course should have an hour count between 0-12","error")
+            return
+        }
+
         if(!protoCourse.online) {
             const courseStart = timeConverter(startTime)
             const courseEnd = timeConverter(endTime)
@@ -262,7 +275,15 @@
                         <IconButton name='edit' title="Edit Course" type='button-tertiary' onClick={() => {startEdit(i)}}/>
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
+                    {#if conflicts.byCourse[i]?.length > 0}
+                        <ChipList chipArr={conflicts.byCourse[i].map(j => ({
+                            text: `${cEvents[j].coursePrefix} ${cEvents[j].courseCode}`,
+                            color: 'septenary',
+                            iconName: 'warning'
+                        }))} />
+                    {/if}
                     <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
+                    <p><strong>Hour Count: </strong> {item.hourCount}</p>
                     {#if item.online}
                         <p><strong>Online Class</strong></p>
                     {:else}
@@ -314,6 +335,10 @@
             <div class="formRow">
 
             </div>
+            <h3>Hour Count</h3>
+                <label for="courseHours">Hours:</label>
+                <input id="courseHours" bind:value={protoCourse.hourCount} type="number" min="0" max="12">
+            <hr>
             {#if !protoCourse.online}
             <hr>
             <h3>Meeting Time</h3>

@@ -1,5 +1,5 @@
 <script>
-    let {use24Hour = $bindable()} = $props()
+    let {use24Hour = $bindable(), minConflictTime = $bindable()} = $props()
 </script>
 
     <div class="flexCol" style="margin: 5vh 0 5vh 0">
@@ -12,7 +12,11 @@
                 </div>
             </div>
             <div class="flexCol surface-1">
-                <h3>General Settings</h3>
+                <h3>Application Settings</h3>
+                <div class="flexRow">
+                    <label for="minConfTime">Minimum conflict gap (minutes):</label>
+                    <input id="minConfTime" type="number" bind:value={minConflictTime} min="0">
+                </div>
             </div>
         </div>
     </div>
