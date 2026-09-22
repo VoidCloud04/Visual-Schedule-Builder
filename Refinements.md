@@ -1,5 +1,9 @@
 # Planned Refinements
 ### From Developer
+- Course Autocomplete
+    - Uses a JSON file for each school containing the course code & name.
+    - Section Number, meeting times and extra meeting will still be manually input
+    - Likely needs a more efficient strategy
 ### From UAT
 - Awaiting Testing
 # Completed Refinements by Version
