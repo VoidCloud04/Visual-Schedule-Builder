@@ -4,7 +4,7 @@
         Array of objects with these attributes:
         {text, iconName, color, disabled}
     */
-    import Chip from "./Chip"
+    import Chip from "./Chip.svelte"
 </script>
 
 <div>
@@ -14,5 +14,12 @@
 </div>
 
 <style lang="scss">
-    
+    div {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        :global(.chip) {
+            margin-right: 0.25vw;
+        }
+    }
 </style>

@@ -4,6 +4,7 @@
     import ButtonGroup from "$lib/components/ButtonGroup.svelte";
     import { format12hrTime, formatDaysOfWeek } from '$lib/index.js'
     import { colorsArray } from '$lib/styles/colors';
+    import ChipList from "../lib/components/ChipList.svelte";
     let {cEvents = [], semesters = [], selectedSemester = $bindable(), switchSemester = () => {}, use24Hour = false, buttonActive = $bindable(), extraActive = $bindable()} = $props()
     
     const calendarID = 'main'
@@ -53,6 +54,7 @@
                             <h1 class="title">{item.courseName}</h1>
                             <ToggleButton iconName='visibility' disabledIcon='visibility_off' activeClass={colors[i]} bind:active={buttonActive[i]}/>
                         </div>
+                        <ChipList />
                         <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
                         <p><strong>Hour Count: </strong> {item.hourCount}</p>
                         {#if item.online}

@@ -9,6 +9,7 @@
     import FAB from '../lib/components/FAB.svelte';
     import ButtonGroup from '../lib/components/ButtonGroup.svelte';
     import { snackbar } from '../lib/components/scripts/snackbar.svelte';
+    import ChipList from '../lib/components/ChipList.svelte';
     
     let addDialogActive = $state(false)
     let deleteEventActive = $state(false)
@@ -273,6 +274,7 @@
                         <IconButton name='edit' title="Edit Course" type='button-tertiary' onClick={() => {startEdit(i)}}/>
                         <IconButton name='delete' type='button-septenary' onClick={() => {deleteEventActive = true; deleteIndex = i}}/>
                     </div>
+                    <ChipList chipArr={[{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'},{text: 'Test', color: 'octonary'}]}/>
                     <p><strong>{item.coursePrefix} {item.courseCode}</strong>.{item.sectionNumber}</p>
                     <p><strong>Hour Count: </strong> {item.hourCount}</p>
                     {#if item.online}

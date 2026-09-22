@@ -1,7 +1,7 @@
 <script>
     import Chip from "../lib/components/Chip.svelte";
 
-    let {use24Hour = $bindable(), fullTimeReq = $bindable()} = $props()
+    let {use24Hour = $bindable(), minConflictTime = $bindable()} = $props()
 </script>
 
     <div class="flexCol" style="margin: 5vh 0 5vh 0">
@@ -16,8 +16,8 @@
             <div class="flexCol surface-1">
                 <h3>General Settings</h3>
                 <div class="flexRow">
-                    <label for="ftReq">Full Time Requirement:</label>
-                    <input id="ftReq"  type="number" bind:value={fullTimeReq} min="0">
+                    <label for="minConfTime">Minimum Time for a Conflict to Occur (exclusive):</label>
+                    <input id="minConfTime"  type="number" bind:value={minConflictTime} min="0">
                 </div>
             </div>
         </div>
