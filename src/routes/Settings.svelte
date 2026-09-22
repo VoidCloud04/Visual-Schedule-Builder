@@ -14,7 +14,7 @@
                 </div>
             </div>
             <div class="flexCol surface-1">
-                <h3><Chip text="General"iconName="menu"/> Settings</h3>
+                <h3>General Settings</h3>
                 <div class="flexRow">
                     <label for="ftReq">Full Time Requirement:</label>
                     <input id="ftReq"  type="number" bind:value={fullTimeReq} min="0">
