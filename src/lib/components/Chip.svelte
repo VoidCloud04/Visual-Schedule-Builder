@@ -1,9 +1,9 @@
 <script>
-    let {text, iconName = '', disabled = false} = $props()
+    let {text, iconName = '', color = 'primary', disabled = false} = $props()
     import Icon from "./Icon.svelte";
 </script>
 
-<div class="chip {disabled ? 'disabled' : ''} {iconName !== '' ? 'has-icon' : ''}">
+<div class="chip color-{color} {disabled ? 'disabled' : ''} {iconName !== '' ? 'has-icon' : ''}">
     {#if iconName !== ''}
         <Icon name={iconName} fontSize="18px"/>
     {/if}
@@ -12,18 +12,35 @@
 
 <style lang="scss">
     @use '$lib/styles/variables' as *;
+
+    $chip-colors: (
+        primary: ($primary, $primaryVar, $onPrimary),
+        secondary: ($secondary, $secondaryVar, $onSecondary),
+        tertiary: ($tertiary, $tertiaryVar, $onTertiary),
+        quaternary: ($quaternary, $quaternaryVar, $onQuaternary),
+        quinary: ($quinary, $quinaryVar, $onQuinary),
+        senary: ($senary, $senaryVar, $onSenary),
+        septenary: ($septenary, $septenaryVar, $onSeptenary),
+        octonary: ($octonary, $octonaryVar, $onOctonary),
+    );
+
     .chip {
         display: flex;
         align-items: center;
         justify-content: flex-start;
         box-sizing: border-box;
-        border: 2px solid $primaryVar;
         border-radius: 8px;
-        background-color: $primary;
-        color: $onPrimary;
         height: 32px;
         width: fit-content;
         padding: 0 16px;
+    }
+
+    @each $name, $colors in $chip-colors {
+        .chip.color-#{$name} {
+            border: 2px solid nth($colors, 2);
+            background-color: nth($colors, 1);
+            color: nth($colors, 3);
+        }
     }
     .has-icon {
         padding: 0 8px;
